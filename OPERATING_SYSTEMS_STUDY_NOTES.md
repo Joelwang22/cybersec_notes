@@ -1,5 +1,8 @@
 # Operating Systems Study Notes
 
+These notes cover the full course in a learning order. They are designed to be copied by hand: each section starts with the central idea, explains the mechanism, and then separates concepts that are easy to confuse.
+
+<a id="contents"></a>
 # Contents
 
 - <a id="toc-section-1-foundations-the-machine-and-the-operating-system"></a>[1. Foundations: the machine and the operating system](#section-1-foundations-the-machine-and-the-operating-system)
@@ -13,14 +16,26 @@
 - <a id="toc-section-9-inter-process-communication-ipc"></a>[9. Inter-process communication (IPC)](#section-9-inter-process-communication-ipc)
 - <a id="toc-section-10-hooking-injection-and-detection"></a>[10. Hooking, injection, and detection](#section-10-hooking-injection-and-detection)
 - <a id="toc-section-11-high-value-distinctions"></a>[11. High-value distinctions](#section-11-high-value-distinctions)
+- <a id="toc-section-12-whole-course-mental-model"></a>[12. Whole-course mental model](#section-12-whole-course-mental-model)
+- <a id="toc-section-13-final-self-test"></a>[13. Final self-test](#section-13-final-self-test)
+- <a id="toc-section-appendix-course-coverage-tracker"></a>[Appendix: course coverage tracker](#section-appendix-course-coverage-tracker)
 
 ---
 
+## How to use these notes
+
+1. Copy one numbered section at a time.
+2. After copying it, close the notes and redraw any sequence or relationship from memory.
+3. Explain each bold term without using the term itself. If you cannot, review that paragraph.
+4. Do the short recall questions at the end of each module without looking back.
+5. Learn relationships, not isolated API names. The APIs are examples of how Windows exposes each idea.
+
+---
+
+<a id="section-1-foundations-the-machine-and-the-operating-system"></a>
 # [1. Foundations: the machine and the operating system](#toc-section-1-foundations-the-machine-and-the-operating-system)
 
 ## 1.1 What a computer is doing
-
-<a id="section-1-foundations-the-machine-and-the-operating-system"></a>
 
 A computer repeatedly transforms state according to instructions.
 
@@ -37,8 +52,6 @@ The basic CPU cycle is:
 
 A **thread**, not a process in the abstract, supplies the instruction stream and register state that a CPU executes.
 
-<a id="section-cpu-terminology"></a>
-
 ### CPU terminology
 
 - **CPU package:** the physical chip installed in a socket.
@@ -48,16 +61,14 @@ A **thread**, not a process in the abstract, supplies the instruction stream and
 
 More logical processors allow more threads to execute at once, but do not guarantee proportional speedups. Threads may compete for caches, memory bandwidth, locks, and other shared resources.
 
-<a id="section-1-2-bits-binary-hexadecimal-and-addresses"></a>
-
 ## 1.2 Bits, binary, hexadecimal, and addresses
 
 A **bit** is a 0 or 1. A group of 8 bits is a **byte**.
 
 Hexadecimal is base 16 and uses `0-9` and `A-F`. One hex digit represents exactly four bits:
 
-| Binary   |   Hex | Binary   |   Hex |
-| -------- | ----: | -------- | ----: |
+| Binary | Hex | Binary | Hex |
+|---|---:|---|---:|
 | `0000` | `0` | `1000` | `8` |
 | `0001` | `1` | `1001` | `9` |
 | `0010` | `2` | `1010` | `A` |
@@ -76,8 +87,6 @@ An address names one byte; it does not describe a whole region. A memory region 
 `base <= address < base + size`
 
 Example: base `0x4000`, size `0x1000` contains `0x4000` through `0x4FFF`. Its first excluded address is `0x5000`.
-
-<a id="section-1-3-why-an-operating-system-exists"></a>
 
 ## 1.3 Why an operating system exists
 
@@ -106,8 +115,6 @@ A helpful model is:
 
 `application intent -> API contract -> OS policy check -> OS mechanism -> result/error`
 
-<a id="section-1-4-multiprocessing-concurrency-and-preemption"></a>
-
 ## 1.4 Multiprocessing, concurrency, and preemption
 
 - **Multiprocessing:** the machine has multiple processors/cores capable of simultaneous work.
@@ -116,8 +123,6 @@ A helpful model is:
 - **Preemption:** the OS can stop a running thread, save its context, and schedule another.
 
 If a thread waits for disk or network I/O, it is not ready to use a CPU. The scheduler can run another ready thread rather than leave the processor idle.
-
-<a id="section-1-5-windows-architecture"></a>
 
 ## 1.5 Windows architecture
 
@@ -143,8 +148,6 @@ Visible system processes include:
 
 Exact arrangements differ between Windows versions and configurations.
 
-<a id="section-1-6-user-mode-and-kernel-mode"></a>
-
 ## 1.6 User mode and kernel mode
 
 Execution mode is a CPU-enforced privilege boundary.
@@ -156,8 +159,6 @@ A user-mode failure is usually contained to one process. A kernel-mode bug can c
 
 Administrator status is not kernel mode. An elevated administrator program still executes in user mode; elevation changes its **security token and permissions**, not its processor privilege level.
 
-<a id="section-controlled-entries-into-the-kernel"></a>
-
 ### Controlled entries into the kernel
 
 - **System call:** a thread requests a protected OS service.
@@ -165,8 +166,6 @@ Administrator status is not kernel mode. An elevated administrator program still
 - **Interrupt:** usually asynchronous hardware notification, such as device completion or a timer.
 
 For a system call, the processor enters a trusted kernel entry point. Windows validates user-supplied pointers, lengths, access rights, and object state, performs the operation, then returns to user mode.
-
-<a id="section-1-7-api-abi-and-system-call"></a>
 
 ## 1.7 API, ABI, and system call
 
@@ -180,9 +179,16 @@ A Win32 call is not automatically a system call. Some Win32 functions work entir
 
 Prefer documented Win32 contracts for applications. Native system-call details are implementation details and may change.
 
-<a id="section-1-8-reading-a-windows-api-contract"></a>
-
 ## 1.8 Reading a Windows API contract
+
+For every API, record:
+
+1. **Purpose:** what operation does it request?
+2. **Inputs:** types, flags, valid ranges, optional values, and string encoding.
+3. **Outputs:** returned value and output buffers/parameters.
+4. **Failure rule:** `FALSE`, `NULL`, `INVALID_HANDLE_VALUE`, another sentinel, or an exception from a binding.
+5. **Error retrieval:** whether `GetLastError` is meaningful and when it must be read.
+6. **Ownership:** what resource was acquired and how it must be released.
 
 Common parameter annotations:
 
@@ -195,8 +201,6 @@ A pointer does not automatically mean output. It may point to input, output, an 
 
 The Unicode `W` variants, such as `CreateFileW`, are the modern default. `A` variants use legacy ANSI code-page conversion.
 
-<a id="section-win32-type-clues"></a>
-
 ### Win32 type clues
 
 - `BYTE` = 8-bit value.
@@ -207,8 +211,6 @@ The Unicode `W` variants, such as `CreateFileW`, are the modern default. `A` var
 - `LPVOID` = pointer to unspecified data.
 - `LPCTSTR` = pointer to constant text, not a numeric value.
 - types ending in `_PTR` are pointer-sized and change width with architecture.
-
-<a id="section-1-9-calling-win32-from-python"></a>
 
 ## 1.9 Calling Win32 from Python
 
@@ -235,8 +237,31 @@ Resource cleanup belongs next to acquisition. Typical pairs include:
 - `OpenService -> CloseServiceHandle`
 - `VirtualAlloc(... reserve ...) -> VirtualFree(... MEM_RELEASE ...)`
 
+## 1.10 Inspecting Windows
+
+Start with a question, not with a tool.
+
+- **Process Explorer:** snapshot of processes, ancestry, threads, handles, modules, tokens, integrity, and current resource use.
+- **Process Monitor:** time-ordered trace of file, Registry, process, thread, and image-load operations.
+- **WinObj:** Object Manager namespace.
+- **VMMap:** one process's virtual address-space regions.
+- **RAMMap:** system-wide physical-memory use.
+
+A snapshot tells what exists now. A trace tells what happened over time. PID, TID, process creation time, image path, and architecture connect evidence. PIDs can be reused, so a PID alone is not permanent identity.
+
+`Access denied` is useful evidence: it reveals an access check or protection boundary, not merely a tool failure.
+
+### Foundation recall
+
+1. Why is administrator status different from kernel mode?
+2. Why is a Win32 call not necessarily a system call?
+3. What are the OS's abstraction and resource-management roles?
+4. What does a half-open address range mean?
+5. Why must cleanup be considered part of an API contract?
+
 ---
 
+<a id="section-2-processes-objects-and-handles"></a>
 # [2. Processes, objects, and handles](#toc-section-2-processes-objects-and-handles)
 
 ## 2.1 Program versus process
@@ -257,8 +282,6 @@ The executable is input to process creation; it is not the running process itsel
 
 Process isolation is selective, not absolute. Processes normally have separate virtual address spaces and handle tables, but they can intentionally share kernel objects, mapped memory, files, or IPC endpoints.
 
-<a id="section-2-2-process-ancestry-and-identity"></a>
-
 ## 2.2 Process ancestry and identity
 
 The process tree records creation ancestry: which process created which child. It does not automatically imply lifetime ownership. A parent can exit while a child continues.
@@ -268,8 +291,6 @@ For dependable identity, combine:
 `PID + creation time + image path + architecture`
 
 Windows can reuse a PID after a process exits. If group lifetime control is required, a **Job Object** can manage related processes as a unit and enforce limits or termination policy.
-
-<a id="section-2-3-threads-and-the-process-container"></a>
 
 ## 2.3 Threads and the process container
 
@@ -293,8 +314,6 @@ Each thread has its own:
 
 This sharing makes communication cheap but creates synchronization problems.
 
-<a id="section-2-4-process-creation"></a>
-
 ## 2.4 Process creation
 
 `CreateProcess` conceptually creates two things together:
@@ -317,8 +336,6 @@ The caller normally receives a process handle, thread handle, PID, and TID. The 
 
 Executable selection and command-line parsing are separate concerns. Quoting mistakes can select the wrong executable or give the child incorrect arguments.
 
-<a id="section-handle-inheritance"></a>
-
 ### Handle inheritance
 
 Inheritance occurs only when both are true:
@@ -329,8 +346,6 @@ Inheritance occurs only when both are true:
 Modern code should restrict inheritance to an explicit list when possible. Accidentally inherited handles can leak authority and keep files or pipe ends alive.
 
 A hidden window is not a hidden process. Window display settings affect the UI; the process remains visible to OS inspection tools.
-
-<a id="section-2-5-kernel-objects-and-the-object-manager"></a>
 
 ## 2.5 Kernel objects and the Object Manager
 
@@ -348,8 +363,6 @@ The Object Manager provides common behavior:
 A named object can be found by other processes. Its name provides discoverability, but does not grant permission. The caller must still pass an access check.
 
 Object Manager paths are not ordinary filesystem paths. Names such as device objects, symbolic links, and named events exist in an object namespace. WinObj displays this namespace.
-
-<a id="section-2-6-handles"></a>
 
 ## 2.6 Handles
 
@@ -369,8 +382,6 @@ Consequences:
 
 Use least privilege: request only the access bits required for the intended operation.
 
-<a id="section-reference-counting-and-object-lifetime"></a>
-
 ### Reference counting and object lifetime
 
 Kernel objects commonly remain alive while references exist. References may come from handles and from the kernel itself.
@@ -383,8 +394,6 @@ Kernel objects commonly remain alive while references exist. References may come
 
 An execution object may remain inspectable after execution ends if handles still refer to it. Likewise, a file may remain open because another process inherited or duplicated the handle.
 
-<a id="section-2-7-duplicate-and-inherited-handles"></a>
-
 ## 2.7 Duplicate and inherited handles
 
 - **Inheritance:** transfers selected handles during child creation.
@@ -392,8 +401,6 @@ An execution object may remain inspectable after execution ends if handles still
 - **Named object open:** another process locates the object by name and requests its own handle.
 
 These are three different ways to share access to one underlying object.
-
-<a id="section-2-8-files-handles-buffering-and-durability"></a>
 
 ## 2.8 Files, handles, buffering, and durability
 
@@ -405,8 +412,18 @@ Writing bytes through a file handle does not necessarily mean the physical devic
 
 File lifetime and data durability are related but different questions.
 
+### Processes and handles recall
+
+1. Why is an executable file not a process?
+2. What does a process contain, and what does each thread contain?
+3. Why can a parent exit without automatically terminating its child?
+4. What information is stored conceptually in a handle-table entry?
+5. Why might requesting `PROCESS_ALL_ACCESS` fail when query-only access succeeds?
+6. Why can an object still exist after one process closes its handle?
+
 ---
 
+<a id="section-3-threads-and-scheduling"></a>
 # [3. Threads and scheduling](#toc-section-3-threads-and-scheduling)
 
 ## 3.1 Thread basics
@@ -425,13 +442,9 @@ Creating many threads has costs:
 
 The right thread count depends on workload. CPU-bound work tends to benefit up to available processor capacity; I/O-bound work can use more threads because many will wait. Measurement matters.
 
-<a id="section-cpython-note"></a>
-
 ### CPython note
 
 Python `threading.Thread` uses native Windows threads, but the normal CPython Global Interpreter Lock prevents multiple threads from executing Python bytecode simultaneously in one interpreter. Threads still overlap I/O well, and native extensions may release the GIL. The GIL is not a general synchronization mechanism for application invariants.
-
-<a id="section-3-2-thread-context-and-stacks"></a>
 
 ## 3.2 Thread context and stacks
 
@@ -451,8 +464,6 @@ Each thread normally has:
 
 A stack trace is a sampled path of nested function calls. It is evidence about what the thread was doing at that instant, not its complete history.
 
-<a id="section-3-3-thread-states"></a>
-
 ## 3.3 Thread states
 
 Important simplified states:
@@ -465,8 +476,6 @@ Important simplified states:
 Ready and waiting are different. A ready thread wants CPU time; a waiting thread is not eligible until its condition is satisfied.
 
 Suspending a thread is not synchronization. Arbitrarily freezing a thread can leave it holding locks or leave shared data midway through an update.
-
-<a id="section-3-4-creating-and-ending-threads-safely"></a>
 
 ## 3.4 Creating and ending threads safely
 
@@ -487,8 +496,6 @@ Safe shutdown pattern:
 
 Forced termination is dangerous because it can skip `finally` blocks, leave locks owned, leak memory, and strand shared state. Daemon threads only change Python's process-shutdown policy; they do not make abrupt cleanup correct.
 
-<a id="section-3-5-scheduling"></a>
-
 ## 3.5 Scheduling
 
 Windows scheduling is primarily **preemptive and priority-driven**. Each logical processor selects a ready thread to run.
@@ -502,8 +509,6 @@ A simplified decision:
 
 Windows schedules threads, not whole processes. Process-level settings often establish a base from which individual thread priorities are calculated.
 
-<a id="section-3-6-affinity"></a>
-
 ## 3.6 Affinity
 
 **Affinity** restricts which logical processors may run a process/thread. It is a constraint, not extra capacity.
@@ -511,8 +516,6 @@ Windows schedules threads, not whole processes. Process-level settings often est
 Possible uses include controlled benchmarks or specialized locality requirements. Misuse can reduce performance by preventing the scheduler from balancing load.
 
 If an experiment changes affinity, record and restore the original mask.
-
-<a id="section-3-7-priority-boosts-starvation-and-inversion"></a>
 
 ## 3.7 Priority, boosts, starvation, and inversion
 
@@ -532,8 +535,18 @@ Elapsed time and CPU time are different:
 
 Benchmarks should use repeated runs, stable inputs, and the correct metric. One fast run may reflect cache warmth or scheduling luck.
 
+### Threads and scheduling recall
+
+1. Why does Windows schedule threads rather than processes?
+2. What must be saved in a context switch?
+3. How does ready differ from waiting?
+4. Why does `join()` not cancel a thread?
+5. Why can too many threads make a program slower?
+6. Why does raising priority not solve every performance problem?
+
 ---
 
+<a id="section-4-memory-management"></a>
 # [4. Memory management](#toc-section-4-memory-management)
 
 ## 4.1 The memory hierarchy
@@ -559,8 +572,6 @@ Do not confuse:
 - **file cache:** OS caching of file data in physical memory;
 - **working set:** pages of a process currently resident in RAM.
 
-<a id="section-4-2-virtual-memory"></a>
-
 ## 4.2 Virtual memory
 
 A pointer in a normal process is a **virtual address**, meaningful inside that process's address space. The Memory Manager and CPU translate virtual pages to physical frames or other backing.
@@ -575,8 +586,6 @@ Virtual memory provides:
 - the ability for not all mapped data to be resident at once.
 
 The same virtual address in two processes can refer to different data. Shared memory may map the same backing at different virtual addresses.
-
-<a id="section-4-3-pages-frames-page-tables-and-tlbs"></a>
 
 ## 4.3 Pages, frames, page tables, and TLBs
 
@@ -597,16 +606,12 @@ Example: address `0x12345` lies on page base `0x12000` at offset `0x345`.
 
 Query actual system values. Windows commonly uses 4 KiB pages but also supports large pages.
 
-<a id="section-page-size-versus-allocation-granularity"></a>
-
 ### Page size versus allocation granularity
 
 - **Page size:** unit used for commitment, protection, translation, and faults; commonly 4 KiB.
 - **Allocation granularity:** alignment for reservation base addresses; commonly 64 KiB on Windows.
 
 They answer different questions.
-
-<a id="section-4-4-address-translation"></a>
 
 ## 4.4 Address translation
 
@@ -620,8 +625,6 @@ Conceptually:
 6. If state/access requires OS work, a page fault occurs.
 
 Page-table permissions can enforce read, write, and execute rules. Protection is checked by hardware and OS-maintained mapping state.
-
-<a id="section-4-5-reserve-commit-and-resident"></a>
 
 ## 4.5 Reserve, commit, and resident
 
@@ -640,8 +643,6 @@ Related measurements:
 - **Working set:** pages currently resident for the process.
 - **Private working set:** resident pages not shareable with other processes.
 
-<a id="section-4-6-page-faults-paging-and-the-page-file"></a>
-
 ## 4.6 Page faults, paging, and the page file
 
 A **page fault** means the current memory access cannot complete using the present translation state. It is a control transfer to the OS, not automatically an error and not automatically a disk read.
@@ -659,8 +660,6 @@ General sequence:
 
 `memory reference -> PTE cannot satisfy it -> trap to Memory Manager -> validate -> obtain/map page or reject -> update translation -> retry instruction or raise exception`
 
-<a id="section-paging-and-the-page-file"></a>
-
 ### Paging and the page file
 
 Under memory pressure, Windows can remove pages from a process working set. Clean file-backed pages can be discarded and read again from their file. Modified private pages need backing, commonly the page file, before their RAM frame can be reused.
@@ -668,8 +667,6 @@ Under memory pressure, Windows can remove pages from a process working set. Clea
 The page file supports system commit and private-page backing. It is not simply “extra RAM,” and not every page fault reads it.
 
 High page-fault counts alone do not prove memory pressure. Combine them with available memory, hard-fault/disk activity, commit, and working-set behavior.
-
-<a id="section-4-7-shared-memory-and-copy-on-write"></a>
 
 ## 4.7 Shared memory and copy-on-write
 
@@ -686,15 +683,11 @@ Sharing memory does not define a safe protocol. Processes still need:
 - initialization and shutdown states;
 - validation of untrusted contents.
 
-<a id="section-copy-on-write-cow"></a>
-
 ### Copy-on-write (COW)
 
 Initially, multiple mappings can refer to one physical page while appearing private. A write causes a fault; Windows allocates/copies a private page for the writer and changes its PTE. Other processes retain the original page.
 
 COW saves memory until modification while preserving isolation.
-
-<a id="section-4-8-virtualalloc-and-protection"></a>
 
 ## 4.8 VirtualAlloc and protection
 
@@ -714,8 +707,6 @@ Avoid writable-and-executable memory where possible. A safer code-generation tra
 
 Whole-reservation release uses the original allocation base, `MEM_RELEASE`, and size zero. APIs have exact lifetime rules; an interior pointer is not a substitute for the original base.
 
-<a id="section-4-9-heaps"></a>
-
 ## 4.9 Heaps
 
 Page allocation is too coarse and expensive for every small object. A **heap allocator** obtains larger virtual-memory regions and suballocates smaller blocks in user mode.
@@ -726,8 +717,6 @@ Page allocation is too coarse and expensive for every small object. A **heap all
 Each process starts with a process heap and may create more. A heap can grow by acquiring more virtual memory.
 
 `HeapAlloc` and `HeapFree` must use the same heap. `HeapSize` describes an allocated block according to that allocator. A 100-byte allocation may sit inside a much larger heap region in VMMap.
-
-<a id="section-4-10-inspecting-address-space"></a>
 
 ## 4.10 Inspecting address space
 
@@ -744,8 +733,19 @@ Do not use `AllocationBase` as every row's range start. The row range is `BaseAd
 
 VMMap classifies one process's virtual regions. RAMMap explains system-wide physical pages. Neither magically exposes all source-level ownership; interpretation still matters.
 
+### Memory recall
+
+1. Why can the same virtual address contain different data in two processes?
+2. What is the difference between a page, a frame, a page table, and a TLB?
+3. Explain reserved, committed, and resident without using them as synonyms.
+4. Why is a page fault not necessarily a disk operation or an error?
+5. How does copy-on-write preserve isolation?
+6. Why do heaps exist above `VirtualAlloc`?
+7. How do `BaseAddress` and `AllocationBase` differ?
+
 ---
 
+<a id="section-5-linking-portable-executables-and-loading"></a>
 # [5. Linking, Portable Executables, and loading](#toc-section-5-linking-portable-executables-and-loading)
 
 ## 5.1 From source code to a running program
@@ -765,8 +765,6 @@ An error belongs to the stage where its required information becomes available:
 - missing/incompatible DLL -> loading;
 - access violation after start -> execution.
 
-<a id="section-5-2-symbols-object-files-and-the-linker"></a>
-
 ## 5.2 Symbols, object files, and the linker
 
 A **symbol** names code or data such as a function or global variable. A compiler can emit a reference without yet knowing the final address.
@@ -779,11 +777,7 @@ An object file contains machine code, data, symbols, unresolved references, and 
 - emits import information for dynamic dependencies;
 - produces the final PE image and supporting metadata.
 
-<a id="section-5-3-static-and-dynamic-linking"></a>
-
 ## 5.3 Static and dynamic linking
-
-<a id="section-static-linking"></a>
 
 ### Static linking
 
@@ -802,8 +796,6 @@ Costs:
 - less physical-memory sharing of common library pages.
 
 A static `.lib` is broadly an archive of object files. The linker normally extracts only needed members.
-
-<a id="section-dynamic-linking"></a>
 
 ### Dynamic linking
 
@@ -829,8 +821,6 @@ Dynamic linking can be:
 
 Each successful `LoadLibrary` contributes a module reference that must be balanced according to the API contract. An `HMODULE` corresponds to a loaded module base in that process, but ownership still follows reference rules.
 
-<a id="section-5-4-the-portable-executable-pe"></a>
-
 ## 5.4 The Portable Executable (PE)
 
 PE is the Windows image format for `.exe`, `.dll`, and many `.sys` files. It is a **mapping recipe**, not a byte-for-byte memory dump.
@@ -839,15 +829,11 @@ Main navigation chain:
 
 `DOS header -> PE signature -> COFF/File header -> Optional header -> data directories -> section headers -> section data`
 
-<a id="section-dos-header"></a>
-
 ### DOS header
 
 - Starts with `MZ` (`0x4D 0x5A`).
 - Field at file offset `0x3C` (`e_lfanew`) points to the PE header.
 - DOS stub commonly contains “This program cannot be run in DOS mode.”
-
-<a id="section-pe-signature-and-file-header"></a>
 
 ### PE signature and File header
 
@@ -857,8 +843,6 @@ The modern signature is `PE\0\0`. The File/COFF header includes:
 - number of sections;
 - size of Optional Header;
 - characteristics such as executable/DLL flags.
-
-<a id="section-optional-header"></a>
 
 ### Optional Header
 
@@ -874,15 +858,11 @@ Despite its name, it is required for executable images. Key fields include:
 
 Use both `Machine` and `Magic` when checking architecture/layout.
 
-<a id="section-data-directories"></a>
-
 ### Data directories
 
 An array of `(RVA, size)` entries points toward major structures, including imports, exports, resources, relocations, exceptions, TLS, and security-related data. A zero entry means that directory is absent.
 
 A data directory points into the image layout. To read it from the file, its RVA normally has to be translated through a section.
-
-<a id="section-5-5-sections-and-coordinate-systems"></a>
 
 ## 5.5 Sections and coordinate systems
 
@@ -895,8 +875,6 @@ Common sections:
 - `.reloc`: base-relocation information.
 
 Section names are conventions, not security guarantees. Use section characteristics to understand intended mapped permissions.
-
-<a id="section-file-offset-rva-and-va"></a>
 
 ### File offset, RVA, and VA
 
@@ -912,8 +890,6 @@ To translate an RVA into a raw file offset, find the section whose virtual range
 
 Validate all ranges. A parser must not trust header values to stay within the file.
 
-<a id="section-raw-size-versus-virtual-size"></a>
-
 ### Raw size versus virtual size
 
 The file and memory layouts have different alignment. A section can have:
@@ -923,8 +899,6 @@ The file and memory layouts have different alignment. A section can have:
 - a raw file position unrelated to its RVA.
 
 This is why treating a PE file as a memory dump fails.
-
-<a id="section-5-6-aslr-and-relocations"></a>
 
 ## 5.6 ASLR and relocations
 
@@ -936,11 +910,7 @@ RVA-based internal structure remains stable relative to the chosen base. Absolut
 
 ASLR makes hard-coded process addresses unreliable across launches.
 
-<a id="section-5-7-imports-exports-and-the-iat"></a>
-
 ## 5.7 Imports, exports, and the IAT
-
-<a id="section-imports"></a>
 
 ### Imports
 
@@ -952,15 +922,11 @@ An import directory describes external DLLs and symbols the image needs. For eac
 
 The **Import Address Table (IAT)** ultimately contains virtual addresses of resolved imported functions. Compiled code can call indirectly through these slots.
 
-<a id="section-exports"></a>
-
 ### Exports
 
 A DLL export table publishes functions/data by name and/or ordinal. An export may be a forwarder directing resolution to another DLL.
 
 `GetProcAddress` returns a raw address. That address is not enough to call safely: the caller must know the correct parameters, return type, calling convention, and lifetime of the containing module.
-
-<a id="section-5-8-what-the-windows-loader-does"></a>
 
 ## 5.8 What the Windows loader does
 
@@ -980,13 +946,9 @@ Much of PE dependency resolution and initialization is user-mode loader work, ev
 
 Dependencies form a graph, not a simple list. The loader must track module identity and initialization state to avoid loading/initializing the same dependency incorrectly.
 
-<a id="section-dllmain-constraints"></a>
-
 ### `DllMain` constraints
 
 DLL entry notifications run under loader constraints. Complex work can deadlock or recursively invoke loader-sensitive operations. Keep `DllMain` minimal: avoid broad initialization, waiting on other threads, and unsafe loading behavior. Defer substantial work until after loader initialization.
-
-<a id="section-5-9-dll-search-security"></a>
 
 ## 5.9 DLL search security
 
@@ -1003,8 +965,19 @@ Safer practices:
 
 Use static PE inspection to learn declared imports, Process Monitor for load-time events, and Process Explorer/ListDLLs for the current loaded-module snapshot. Each answers a different question.
 
+### Linking and loading recall
+
+1. Which problem does compilation solve, and which does linking solve?
+2. How do static and dynamic linking differ?
+3. Why is PE a mapping recipe rather than a memory dump?
+4. Explain file offset, RVA, and VA.
+5. What does the IAT contain after loading?
+6. Why can the actual image base differ from `ImageBase`?
+7. Why should `DllMain` do very little?
+
 ---
 
+<a id="section-6-windows-management-registry-services-and-wow64"></a>
 # [6. Windows management: Registry, services, and WoW64](#toc-section-6-windows-management-registry-services-and-wow64)
 
 ## 6.1 The Registry model
@@ -1028,8 +1001,6 @@ Common value types:
 - `REG_QWORD`: 64-bit integer;
 - `REG_BINARY`: uninterpreted bytes.
 
-<a id="section-6-2-registry-roots-and-views"></a>
-
 ## 6.2 Registry roots and views
 
 Important roots:
@@ -1043,8 +1014,6 @@ Important roots:
 Some roots are aliases or merged views rather than separate physical stores. The apparent path is an API namespace, not necessarily a single file location.
 
 Registry keys are secured objects opened with requested rights. Opening returns a key handle; names do not bypass permissions.
-
-<a id="section-6-3-reading-and-modifying-safely"></a>
 
 ## 6.3 Reading and modifying safely
 
@@ -1069,8 +1038,6 @@ Enumeration is a snapshot-like traversal of mutable data; another actor may add/
 
 Use HKCU and a dedicated lab key for experiments. Avoid changing system startup/shell/service configuration while learning.
 
-<a id="section-6-4-services-and-the-service-control-manager"></a>
-
 ## 6.4 Services and the Service Control Manager
 
 A **Windows service** is a program/component managed under a contract with the **Service Control Manager (SCM)**. It is not merely any background process.
@@ -1090,8 +1057,6 @@ Separate two kinds of state:
 - **Runtime status:** stopped, start-pending, running, stop-pending, etc., with checkpoint/wait-hint information.
 
 Starting/stopping is asynchronous. A control request returning successfully often means “request accepted,” not “transition complete.” Correct code polls status, respects checkpoint progress/wait hints, handles timeouts, and reaches a terminal state.
-
-<a id="section-6-5-service-handles-and-access"></a>
 
 ## 6.5 Service handles and access
 
@@ -1113,8 +1078,6 @@ Service handles use `CloseServiceHandle`, not an arbitrary cleanup function. Wit
 
 Never use a critical service as a control experiment. Enumeration and status queries are the safe default.
 
-<a id="section-6-6-service-hosts-and-background-processes"></a>
-
 ## 6.6 Service hosts and background processes
 
 Some services run in their own executables. Many DLL-based services run inside `svchost.exe` instances.
@@ -1130,8 +1093,6 @@ Other background activation mechanisms include scheduled tasks, logon/startup en
 
 Correlate SCM enumeration with Process Explorer's service-per-process view, image path, loaded modules, command line, account, and signature. A PID only describes the current host instance.
 
-<a id="section-6-7-wow64"></a>
-
 ## 6.7 WoW64
 
 **WoW64** allows 32-bit x86 applications to run on 64-bit Windows through user-mode compatibility components plus kernel support. The processor executes 32-bit instructions using its compatibility capability; WoW64 bridges system interfaces and environment differences.
@@ -1143,8 +1104,6 @@ Key ideas:
 - the native OS remains 64-bit;
 - API-visible filesystem and Registry paths may be redirected/viewed differently.
 
-<a id="section-filesystem-redirection"></a>
-
 ### Filesystem redirection
 
 Historical naming is counterintuitive:
@@ -1154,8 +1113,6 @@ Historical naming is counterintuitive:
 - `Sysnative` is a special alias allowing a 32-bit process to reach the native System32 view in supported contexts.
 
 Do not broadly disable filesystem redirection. Choose an architecture-aware supported path.
-
-<a id="section-registry-views"></a>
 
 ### Registry views
 
@@ -1167,8 +1124,19 @@ Do not assume every key is redirected or manually insert `WOW6432Node`. State wh
 
 Architecture evidence should agree across file headers, process bitness, pointer width, and loaded-module architecture.
 
+### Windows management recall
+
+1. What is the difference between a Registry key and value?
+2. Why are Registry value type and data inseparable?
+3. How does a service differ from a generic background process?
+4. Why is a successful start request not proof that a service is running?
+5. How can several services share one PID?
+6. Why does 64-bit `System32` contain native binaries while `SysWOW64` contains 32-bit ones?
+7. How do WoW64 Registry views differ from UAC virtualization?
+
 ---
 
+<a id="section-7-windows-security"></a>
 # [7. Windows security](#toc-section-7-windows-security)
 
 ## 7.1 Authentication, authorization, and auditing
@@ -1187,8 +1155,6 @@ The subject is represented by a security context/token. The object has a securit
 
 Auditing policy is not permission. A DACL controls discretionary access; a SACL can request auditing for selected attempts, subject to system audit policy.
 
-<a id="section-7-2-sids"></a>
-
 ## 7.2 SIDs
 
 A **Security Identifier (SID)** is a variable-length identity used for authorization. Users, groups, computers, services, and other principals can have SIDs.
@@ -1202,8 +1168,6 @@ Examples of well-known SIDs:
 - built-in/local-domain administrator and guest accounts use well-known relative IDs in their domain SID.
 
 A SID string contains revision, identifier authority, and subauthorities. Do not compare users by display name alone.
-
-<a id="section-7-3-access-tokens"></a>
 
 ## 7.3 Access tokens
 
@@ -1223,8 +1187,6 @@ Token handles have their own access rights. Permission to query a token is not p
 
 Group membership alone is not enough; group attributes can mark membership enabled, disabled, deny-only, or otherwise affect access checks.
 
-<a id="section-7-4-security-descriptors"></a>
-
 ## 7.4 Security descriptors
 
 A **security descriptor** is a structured policy record attached to a securable object. It can contain:
@@ -1237,8 +1199,6 @@ A **security descriptor** is a structured policy record attached to a securable 
 
 The owner generally has special authority to change discretionary permissions, but ownership is not automatic full access to every operation.
 
-<a id="section-7-5-acls-and-aces"></a>
-
 ## 7.5 ACLs and ACEs
 
 An ACL contains ordered **Access Control Entries (ACEs)**. An ACE includes a trustee SID, type, access mask, flags, and sometimes object-specific data.
@@ -1246,8 +1206,6 @@ An ACL contains ordered **Access Control Entries (ACEs)**. An ACE includes a tru
 Common ACE types include allow and deny. ACE order and applicability matter; do not reduce an ACL to “sum all matching permissions.” Windows uses canonical ordering conventions because an earlier applicable deny/allow can affect remaining requested bits.
 
 Access-mask bits are object-type-specific. `0x00000001` may represent different named rights for a file, process, event, or service. Generic rights such as `GENERIC_READ` must be mapped through that object's generic mapping.
-
-<a id="section-crucial-dacl-states"></a>
 
 ### Crucial DACL states
 
@@ -1257,8 +1215,6 @@ Access-mask bits are object-type-specific. `0x00000001` may represent different 
 - **DACL absent/present flags:** must be interpreted from the descriptor APIs, not guessed from an empty Python value.
 
 These states are not interchangeable.
-
-<a id="section-7-6-simplified-access-check-process"></a>
 
 ## 7.6 Simplified access-check process
 
@@ -1280,8 +1236,6 @@ Important consequences:
 - Passing a DACL check does not guarantee a real open succeeds; the object can have additional state or sharing constraints.
 - `Access denied` should be explained in terms of requested rights, effective token, policy, and object type.
 
-<a id="section-7-7-privileges"></a>
-
 ## 7.7 Privileges
 
 A **privilege** is a named capability in a token for particular system-wide operations, sometimes allowing behavior outside ordinary object DACL rules.
@@ -1296,8 +1250,6 @@ Principles:
 - enable powerful privileges only for the smallest required interval.
 
 Privileges and object access rights are different. `SeDebugPrivilege` does not mean every API operation is universally permitted, especially with modern protected-process and mitigation boundaries.
-
-<a id="section-7-8-impersonation"></a>
 
 ## 7.8 Impersonation
 
@@ -1317,8 +1269,6 @@ Impersonation is useful because a privileged service can access resources on beh
 
 Creating a process as another identity is more involved: process creation needs an appropriate **primary token**, exact token/process rights, environment/profile handling, and a full launch contract. An impersonation token is not automatically suitable.
 
-<a id="section-7-9-security-components"></a>
-
 ## 7.9 Security components
 
 - **Security Reference Monitor (SRM):** kernel/executive security enforcement, including access checks.
@@ -1328,8 +1278,6 @@ Creating a process as another identity is more involved: process creation needs 
 - **SAM/domain directory:** identity/account data sources in their respective environments.
 
 Keep policy/storage/authentication components distinct from the kernel component that enforces object access.
-
-<a id="section-7-10-uac-and-elevation"></a>
 
 ## 7.10 UAC and elevation
 
@@ -1343,8 +1291,6 @@ Therefore:
 - elevation != kernel mode;
 - a manifest can state requested execution level;
 - UAC is not a security boundary against a malicious actor already executing as the same user in every scenario, but it is an important least-privilege/consent mechanism.
-
-<a id="section-7-11-integrity-levels"></a>
 
 ## 7.11 Integrity levels
 
@@ -1361,16 +1307,26 @@ Examples:
 
 Integrity and user/kernel mode are separate axes. Both low- and high-integrity applications normally execute in user mode.
 
-<a id="section-7-12-object-reuse-protection"></a>
-
 ## 7.12 Object reuse protection
 
 When storage or memory is reassigned, Windows prevents a new user from reading leftover data belonging to a previous user, for example by supplying zeroed pages. This is **object reuse protection**.
 
 It does not mean deleted data is impossible to recover from storage media. Sanitization and forensic recovery are different topics.
 
+### Security recall
+
+1. Distinguish authentication, authorization, and auditing.
+2. Why does Windows store SIDs rather than only account names in permissions?
+3. What information does an access token carry?
+4. What is the difference between a null and an empty DACL?
+5. Why does an existing handle usually keep working after a DACL is tightened?
+6. How does a privilege differ from an object access right?
+7. What changes during thread impersonation?
+8. How do administrator membership, elevation, integrity, and kernel mode differ?
+
 ---
 
+<a id="section-8-synchronization-and-concurrency"></a>
 # [8. Synchronization and concurrency](#toc-section-8-synchronization-and-concurrency)
 
 ## 8.1 Why concurrent code goes wrong
@@ -1390,8 +1346,6 @@ Shared state includes more than variables. It includes files, handles, object li
 
 The strongest simplification is often to remove sharing: give one thread ownership of mutable data and send it work through a queue.
 
-<a id="section-8-2-race-conditions-and-atomicity"></a>
-
 ## 8.2 Race conditions and atomicity
 
 A **race condition** occurs when correctness depends on timing/interleaving that the program did not control.
@@ -1408,8 +1362,6 @@ An operation is **atomic** relative to particular observers if it appears to hap
 
 The CPython GIL does not make a multi-step business invariant atomic. Python can switch around bytecode execution, C extensions can release the GIL, and the invariant may span several objects or operations.
 
-<a id="section-interlocked-operations"></a>
-
 ### Interlocked operations
 
 Windows Interlocked APIs provide atomic operations such as increment, exchange, add, and compare-exchange on correctly aligned values.
@@ -1419,8 +1371,6 @@ Windows Interlocked APIs provide atomic operations such as increment, exchange, 
 `if current == expected: current = desired; report prior/current result`
 
 It enables narrow lock-free state transitions. It does not automatically make a complex data structure correct; algorithms also need ordering, lifetime, and ABA/reclamation reasoning.
-
-<a id="section-8-3-efficient-waiting"></a>
 
 ## 8.3 Efficient waiting
 
@@ -1432,13 +1382,9 @@ A blocking wait lets the OS mark the thread waiting and schedule other work. Whe
 
 A trace/debugger can change timing and hide or expose races. This **observer effect** is why intermittent concurrency failures need repeated, controlled experiments.
 
-<a id="section-8-4-critical-sections-and-mutexes"></a>
-
 ## 8.4 Critical sections and mutexes
 
 Both enforce mutual exclusion, but they have different scope/mechanics.
-
-<a id="section-critical-section"></a>
 
 ### Critical section
 
@@ -1447,8 +1393,6 @@ Both enforce mutual exclusion, but they have different scope/mechanics.
 - optimized to acquire in user mode when uncontended;
 - may enter kernel waiting when contended;
 - has ownership/reentrancy behavior in the Windows primitive.
-
-<a id="section-mutex"></a>
 
 ### Mutex
 
@@ -1461,8 +1405,6 @@ Both enforce mutual exclusion, but they have different scope/mechanics.
 
 Use the simplest primitive that matches the sharing boundary. Do not choose a cross-process kernel object when a process-local lock is sufficient.
 
-<a id="section-correct-acquisition-pattern"></a>
-
 ### Correct acquisition pattern
 
 1. wait/acquire;
@@ -1474,15 +1416,11 @@ Use the simplest primitive that matches the sharing boundary. Do not choose a cr
 
 Waiting, releasing ownership, and closing a handle are three different operations.
 
-<a id="section-abandoned-mutex"></a>
-
 ### Abandoned mutex
 
 If a thread exits while owning a mutex, a later waiter may receive `WAIT_ABANDONED`. That waiter obtains ownership, but Windows is warning that the protected state may be inconsistent because the previous owner did not finish cleanup.
 
 The response is not “continue normally.” Validate or rebuild the invariant, fail safely if it cannot be trusted, then release appropriately.
-
-<a id="section-8-5-semaphores"></a>
 
 ## 8.5 Semaphores
 
@@ -1501,21 +1439,15 @@ A semaphore with maximum 1 can restrict admission like a binary gate, but it is 
 
 Capacity control and data protection are different. A semaphore allowing three workers into a region does not make their shared data updates safe; another lock/protocol may still be needed.
 
-<a id="section-8-6-events-and-waitable-objects"></a>
-
 ## 8.6 Events and waitable objects
 
 An **event** stores a Boolean signaled/non-signaled condition. It communicates that a condition occurred or remains true; it does not carry arbitrary message data.
-
-<a id="section-manual-reset-event"></a>
 
 ### Manual-reset event
 
 - when set, releases any current waiters and remains signaled;
 - future waiters also pass until someone calls `ResetEvent`;
 - useful for broadcast state such as “shutdown requested.”
-
-<a id="section-auto-reset-event"></a>
 
 ### Auto-reset event
 
@@ -1536,8 +1468,6 @@ Other waitable objects become signaled for defined reasons:
 
 Every wait result must be interpreted: success/object index, timeout, abandoned mutex, or failure. A timeout is not successful acquisition.
 
-<a id="section-8-7-names-handles-and-synchronization-lifetime"></a>
-
 ## 8.7 Names, handles, and synchronization lifetime
 
 A named mutex/event/semaphore can be created by one process and opened by another.
@@ -1550,11 +1480,7 @@ A named mutex/event/semaphore can be created by one process and opened by anothe
 
 Two processes may have different handle numbers for the same object. Handle identity is process-local; object identity is underlying and may be associated with a namespace name.
 
-<a id="section-8-8-deadlock-starvation-and-livelock"></a>
-
 ## 8.8 Deadlock, starvation, and livelock
-
-<a id="section-deadlock"></a>
 
 ### Deadlock
 
@@ -1567,19 +1493,13 @@ Threads form a cycle of dependencies in which none can proceed. Four classic nec
 
 Preventing any one condition prevents that class of deadlock. A common design is a global lock order: if all code acquires `A` before `B`, the `A <-> B` cycle cannot form.
 
-<a id="section-starvation"></a>
-
 ### Starvation
 
 One participant waits indefinitely while others continue to make progress, often because the policy is unfair or high-priority work continually arrives.
 
-<a id="section-livelock"></a>
-
 ### Livelock
 
 Participants remain active and react to one another but keep preventing progress, such as both repeatedly backing off and retrying in lockstep.
-
-<a id="section-safe-design-rules"></a>
 
 ### Safe design rules
 
@@ -1593,8 +1513,19 @@ Participants remain active and react to one another but keep preventing progress
 
 Stack traces show where threads are stopped. Wait-chain analysis shows dependency relationships. Together they help explain hangs.
 
+### Synchronization recall
+
+1. Why is one source-code line not necessarily atomic?
+2. What is an invariant, and why should a lock protect it rather than a line?
+3. Compare critical section, mutex, semaphore, and event.
+4. What does `WAIT_ABANDONED` tell the new mutex owner?
+5. Why are “release ownership” and “close handle” separate?
+6. State the four necessary deadlock conditions.
+7. How do deadlock, starvation, and livelock differ?
+
 ---
 
+<a id="section-9-inter-process-communication-ipc"></a>
 # [9. Inter-process communication (IPC)](#toc-section-9-inter-process-communication-ipc)
 
 ## 9.1 Why IPC must be explicit
@@ -1609,8 +1540,6 @@ Every IPC design has at least four layers:
 4. **Security/trust:** who can connect/open, how peers are authenticated, and how untrusted input is validated.
 
 Transport success does not prove protocol correctness or peer trust.
-
-<a id="section-9-2-protocol-design"></a>
 
 ## 9.2 Protocol design
 
@@ -1630,8 +1559,6 @@ Never trust a length field before checking it against a safe maximum and the ava
 
 **Backpressure** is what happens when producers are faster than consumers: writers may block, buffers may grow, data may be rejected/dropped, or the protocol may signal flow control. It must be a deliberate policy.
 
-<a id="section-9-3-anonymous-pipes"></a>
-
 ## 9.3 Anonymous pipes
 
 An anonymous pipe is a one-way byte stream represented by a read handle and a write handle. It is commonly used between related processes, especially to redirect standard input/output/error.
@@ -1649,8 +1576,6 @@ Typical parent-child setup:
 
 Inheritance requires both an inheritable handle and creation-time inheritance permission.
 
-<a id="section-eof-and-pipe-leaks"></a>
-
 ### EOF and pipe leaks
 
 A reader sees EOF only after **every write handle** referring to that pipe end has closed. If the parent accidentally keeps an extra writer or passes it to another child, the reader can wait forever even though the intended writer finished.
@@ -1658,8 +1583,6 @@ A reader sees EOF only after **every write handle** referring to that pipe end h
 For every pipe, draw an ownership table listing each process and which read/write ends it owns. Close unused ends as soon as creation succeeds.
 
 Pipelines magnify mistakes: with N stages, each stage must inherit only its input/output and close every unrelated copy. Exit codes from all stages are part of the result, not just the final output bytes.
-
-<a id="section-9-4-named-pipes"></a>
 
 ## 9.4 Named pipes
 
@@ -1672,8 +1595,6 @@ Roles:
 - both exchange data using read/write operations;
 - server can create multiple instances for multiple clients.
 
-<a id="section-byte-mode-versus-message-mode"></a>
-
 ### Byte mode versus message mode
 
 - **Byte mode:** a stream; reads need not match write boundaries.
@@ -1681,15 +1602,11 @@ Roles:
 
 Connection races are normal: a client can connect around the server's connect call, and APIs document special outcomes for this case. Treat documented “already connected” results as a state transition, not blindly as failure.
 
-<a id="section-named-pipe-security"></a>
-
 ### Named-pipe security
 
 The pipe is a securable object. Its security descriptor controls who can open it. A server may inspect or impersonate the connected client, but must still validate every request.
 
 Endpoint permission answers “who may connect?” It does not prove the client will send well-formed or authorized commands. Conversely, knowing a pipe name does not grant access.
-
-<a id="section-9-5-file-mappings-shared-memory"></a>
 
 ## 9.5 File mappings / shared memory
 
@@ -1708,8 +1625,6 @@ Views and object handles are separate resources with separate cleanup.
 
 Processes share backing, not virtual addresses. Never store a raw process pointer as the shared representation. Store an offset from the mapping base or another portable identifier.
 
-<a id="section-visibility-ordering-and-persistence"></a>
-
 ### Visibility, ordering, and persistence
 
 - **Visibility:** when another processor/process observes writes.
@@ -1717,8 +1632,6 @@ Processes share backing, not virtual addresses. Never store a raw process pointe
 - **Persistence:** whether changed file-backed data has reached durable storage.
 
 These are separate guarantees. A synchronization primitive can establish a protocol/order; `FlushViewOfFile` concerns propagation toward the mapped file/cache, and additional file/device flushing may be needed for a desired durability guarantee.
-
-<a id="section-9-6-synchronization-objects-as-ipc"></a>
 
 ## 9.6 Synchronization objects as IPC
 
@@ -1732,20 +1645,18 @@ A common shared-memory protocol uses:
 
 Data movement and coordination remain distinct even when used together.
 
-<a id="section-9-7-choosing-an-ipc-mechanism"></a>
-
 ## 9.7 Choosing an IPC mechanism
 
 Choose from constraints rather than familiarity:
 
-| Need                               | Usually consider              | Main concern                            |
-| ---------------------------------- | ----------------------------- | --------------------------------------- |
-| parent-child byte redirection      | anonymous pipe                | inheritance and closing extra ends      |
-| local named client/server          | named pipe                    | framing, instances, ACL/client identity |
-| large/high-throughput local data   | shared mapping                | layout and synchronization              |
-| network or cross-platform endpoint | socket                        | protocol, authentication, partial I/O   |
-| signal/coordination only           | event/semaphore/mutex         | state versus data semantics             |
-| durable loose coupling             | file/database/message service | consistency and recovery                |
+| Need | Usually consider | Main concern |
+|---|---|---|
+| parent-child byte redirection | anonymous pipe | inheritance and closing extra ends |
+| local named client/server | named pipe | framing, instances, ACL/client identity |
+| large/high-throughput local data | shared mapping | layout and synchronization |
+| network or cross-platform endpoint | socket | protocol, authentication, partial I/O |
+| signal/coordination only | event/semaphore/mutex | state versus data semantics |
+| durable loose coupling | file/database/message service | consistency and recovery |
 
 Also evaluate:
 
@@ -1758,9 +1669,22 @@ Also evaluate:
 - security boundary;
 - observability and failure recovery.
 
+### IPC recall
+
+1. What four layers must an IPC design address?
+2. Why can an anonymous-pipe reader wait forever after the writer process seems finished?
+3. How do byte-mode and message-mode pipes differ?
+4. Why does a pipe ACL not remove the need to validate messages?
+5. Why must shared mappings use offsets rather than pointers?
+6. Distinguish visibility, ordering, and persistence.
+7. Why are synchronization objects IPC even when they do not carry application data?
+
 ---
 
+<a id="section-10-hooking-injection-and-detection"></a>
 # [10. Hooking, injection, and detection](#toc-section-10-hooking-injection-and-detection)
+
+This module studies OS mechanisms and defensive evidence. The same low-level capabilities can support debugging, accessibility, instrumentation, security products, malware, or unauthorized tampering. Legitimacy depends on authorization, intent, implementation, and scope.
 
 ## 10.1 Injection versus hooking
 
@@ -1770,8 +1694,6 @@ Also evaluate:
 They can be combined but are not synonyms. A module may be injected without changing an existing function path; a supported hook can redirect events through code loaded by a documented mechanism.
 
 Technique does not determine intent. Also, a technique working as designed is different from exploiting a vulnerability.
-
-<a id="section-10-2-natural-code-loading-paths"></a>
 
 ## 10.2 Natural code-loading paths
 
@@ -1786,8 +1708,6 @@ Before studying unusual loading, remember normal paths:
 Startup imports are resolved before ordinary application entry. Architecture must match: 32-bit and 64-bit code cannot be freely mixed in one ordinary process.
 
 DLL selection/search policy is part of security. Modifying an executable's import table or bytes changes the file identity and generally invalidates its digital signature.
-
-<a id="section-10-3-remote-memory-and-remote-threads-conceptual-chain"></a>
 
 ## 10.3 Remote memory and remote threads: conceptual chain
 
@@ -1814,8 +1734,6 @@ An address valid in the injector is not automatically valid in the target. ASLR,
 
 Executable private memory is not automatically malicious—JIT runtimes generate code—but its provenance, protection transitions, start addresses, and surrounding events can make it suspicious.
 
-<a id="section-10-4-position-independent-code"></a>
-
 ## 10.4 Position-independent code
 
 Ordinary compiled code often depends on:
@@ -1833,8 +1751,6 @@ Copying arbitrary function bytes elsewhere usually breaks those assumptions.
 
 A supported PE module lets the Windows loader handle imports, relocations, section protections, TLS, and other metadata. Raw instruction bytes shift all those responsibilities to the author.
 
-<a id="section-10-5-windows-hooks"></a>
-
 ## 10.5 Windows hooks
 
 Documented Windows hook APIs can insert a callback into specific GUI/message/event paths.
@@ -1849,8 +1765,6 @@ Important properties:
 - it must be unhooked before unloading its code.
 
 A callback can run in sensitive/reentrant contexts. Calling complex code or unloading while callbacks remain possible creates races and crashes.
-
-<a id="section-10-6-iat-hooking"></a>
 
 ## 10.6 IAT hooking
 
@@ -1871,8 +1785,6 @@ Scope is limited: it affects calls routed through that IAT slot, not every possi
 The replacement must preserve parameters, return type, calling convention, error behavior, thread safety, and reentrancy expectations. Pointer replacement should be atomic for other threads.
 
 This is different from unsupported kernel table patching, which crosses a much more dangerous protection boundary.
-
-<a id="section-10-7-detection-as-evidence-correlation"></a>
 
 ## 10.7 Detection as evidence correlation
 
@@ -1912,8 +1824,6 @@ Useful tools:
 
 Preserve evidence before taking disruptive action. Terminating a process may destroy the timeline, memory, handles, and connection state needed to understand what happened.
 
-<a id="section-hooking-and-injection-recall"></a>
-
 ### Hooking and injection recall
 
 1. How do injection and hooking differ?
@@ -1927,45 +1837,193 @@ Preserve evidence before taking disruptive action. Terminating a process may des
 ---
 
 <a id="section-11-high-value-distinctions"></a>
-
 # [11. High-value distinctions](#toc-section-11-high-value-distinctions)
 
 These pairs are common sources of confusion. Rewrite each contrast from memory.
 
-| Concept A         | Concept B                  | Essential difference                                                         |
-| ----------------- | -------------------------- | ---------------------------------------------------------------------------- |
-| program           | process                    | stored image versus live OS container                                        |
-| process           | thread                     | resource/isolation container versus execution path                           |
-| PID               | process handle             | current numeric identifier versus checked reference carrying rights          |
-| object name       | handle                     | discoverability versus process-local authorized reference                    |
-| close handle      | terminate object execution | release one reference versus stop running code                               |
-| concurrency       | parallelism                | overlapping progress versus simultaneous execution                           |
-| ready             | waiting                    | wants CPU versus blocked on a condition                                      |
-| join              | cancellation               | wait for finish versus request/force finish                                  |
-| priority          | affinity                   | order among ready work versus allowed processors                             |
-| virtual address   | physical frame             | process-relative name versus RAM storage unit                                |
-| reserve           | commit                     | claim address range versus promise backing                                   |
-| commit            | resident                   | backing guarantee versus currently in RAM                                    |
-| page fault        | hard fault                 | translation needs OS handling versus storage read required                   |
-| CPU cache         | file cache                 | hardware memory cache versus OS file-data cache                              |
-| page size         | allocation granularity     | mapping/protection unit versus reservation alignment                         |
-| RVA               | VA                         | offset from image base versus actual process address                         |
-| raw file offset   | RVA                        | location on disk versus position in mapped image                             |
-| static linking    | dynamic linking            | incorporate code at link time versus resolve external module at load/runtime |
-| import table      | export table               | required external symbols versus published symbols                           |
-| configuration     | service status             | durable SCM record versus current runtime transition/state                   |
-| WoW64 redirection | UAC virtualization         | architecture compatibility view versus legacy unelevated-write compatibility |
-| authentication    | authorization              | establish identity versus decide permitted action                            |
-| SID               | account name               | authorization identity versus human-readable translation                     |
-| access right      | privilege                  | authority on an object handle versus token capability for special operations |
-| DACL              | SACL                       | discretionary permissions versus audit/mandatory policy information          |
-| null DACL         | empty DACL                 | unrestricted discretionary access versus no discretionary grants             |
-| elevation         | kernel mode                | stronger user-mode token versus processor privilege mode                     |
-| mutex             | semaphore                  | owned mutual exclusion versus unowned count of permits                       |
-| event             | message                    | condition signal versus application data                                     |
-| release lock      | close handle               | give up ownership/permit versus release object reference                     |
-| deadlock          | starvation                 | dependency cycle stops group versus one participant never wins               |
-| anonymous pipe    | named pipe                 | inherited related-process channel versus discoverable server endpoint        |
-| shared backing    | shared address             | same underlying bytes versus same pointer value (not guaranteed)             |
-| injection         | hooking                    | add code/data to context versus redirect behavior path                       |
-| signature         | trust verdict              | verified publisher/integrity evidence versus full behavioral safety          |
+| Concept A | Concept B | Essential difference |
+|---|---|---|
+| program | process | stored image versus live OS container |
+| process | thread | resource/isolation container versus execution path |
+| PID | process handle | current numeric identifier versus checked reference carrying rights |
+| object name | handle | discoverability versus process-local authorized reference |
+| close handle | terminate object execution | release one reference versus stop running code |
+| concurrency | parallelism | overlapping progress versus simultaneous execution |
+| ready | waiting | wants CPU versus blocked on a condition |
+| join | cancellation | wait for finish versus request/force finish |
+| priority | affinity | order among ready work versus allowed processors |
+| virtual address | physical frame | process-relative name versus RAM storage unit |
+| reserve | commit | claim address range versus promise backing |
+| commit | resident | backing guarantee versus currently in RAM |
+| page fault | hard fault | translation needs OS handling versus storage read required |
+| CPU cache | file cache | hardware memory cache versus OS file-data cache |
+| page size | allocation granularity | mapping/protection unit versus reservation alignment |
+| RVA | VA | offset from image base versus actual process address |
+| raw file offset | RVA | location on disk versus position in mapped image |
+| static linking | dynamic linking | incorporate code at link time versus resolve external module at load/runtime |
+| import table | export table | required external symbols versus published symbols |
+| configuration | service status | durable SCM record versus current runtime transition/state |
+| WoW64 redirection | UAC virtualization | architecture compatibility view versus legacy unelevated-write compatibility |
+| authentication | authorization | establish identity versus decide permitted action |
+| SID | account name | authorization identity versus human-readable translation |
+| access right | privilege | authority on an object handle versus token capability for special operations |
+| DACL | SACL | discretionary permissions versus audit/mandatory policy information |
+| null DACL | empty DACL | unrestricted discretionary access versus no discretionary grants |
+| elevation | kernel mode | stronger user-mode token versus processor privilege mode |
+| mutex | semaphore | owned mutual exclusion versus unowned count of permits |
+| event | message | condition signal versus application data |
+| release lock | close handle | give up ownership/permit versus release object reference |
+| deadlock | starvation | dependency cycle stops group versus one participant never wins |
+| anonymous pipe | named pipe | inherited related-process channel versus discoverable server endpoint |
+| shared backing | shared address | same underlying bytes versus same pointer value (not guaranteed) |
+| injection | hooking | add code/data to context versus redirect behavior path |
+| signature | trust verdict | verified publisher/integrity evidence versus full behavioral safety |
+
+---
+
+<a id="section-12-whole-course-mental-model"></a>
+# [12. Whole-course mental model](#toc-section-12-whole-course-mental-model)
+
+Most of the course can be connected by following one application request:
+
+1. A **thread** executes user-mode instructions inside a **process**.
+2. It calls a documented **Win32 API** under an ABI contract.
+3. If protected OS work is needed, execution crosses through a **system call**.
+4. Windows identifies the thread's effective **token**.
+5. The Object/Security managers compare requested **access rights** with object policy.
+6. On success, the process receives a **handle** carrying granted authority.
+7. The thread may block on I/O or a synchronization object; the **scheduler** runs another ready thread.
+8. Its code and data use **virtual addresses**, translated page by page and faulted into RAM as needed.
+9. Its executable and DLLs were mapped from **PE** files and connected through imports/IAT entries by the **loader**.
+10. It may communicate with other isolated processes through explicit **IPC** and coordinate through waitable objects.
+11. Registry/services provide managed configuration and background execution; WoW64 adapts architecture views.
+12. Inspection and security analysis correlate processes, handles, tokens, memory mappings, threads, modules, and time-ordered events.
+
+If you understand why each arrow exists, you understand the structure of this course rather than only its vocabulary.
+
+---
+
+<a id="section-13-final-self-test"></a>
+# [13. Final self-test](#toc-section-13-final-self-test)
+
+Answer these without notes. Draw mechanisms where possible.
+
+1. Trace a file-open request from a user-mode thread to a returned handle.
+2. Explain why an elevated application is still isolated from kernel memory.
+3. Draw a process with two threads, address-space regions, modules, token, and handle table.
+4. Show how a context switch lets a waiting thread stop consuming a processor.
+5. Translate `0x12345` into a 4 KiB page base and offset.
+6. Trace a demand-zero page fault and contrast it with a hard fault.
+7. Explain why 100 bytes from a heap may occupy part of a much larger VMMap region.
+8. Draw the PE header chain and convert an RVA into a VA.
+9. Trace how an imported function ends up as a callable address in the IAT.
+10. Explain why secure DLL search is part of correctness, not just deployment.
+11. Distinguish Registry path, key, value name, value data, type, and 32/64-bit view.
+12. Trace a service start request through pending states to running.
+13. Draw token SIDs/privileges/integrity against an object's security descriptor.
+14. Explain null DACL, empty DACL, and an existing handle after a DACL change.
+15. Demonstrate a lost-update race using two threads and three operations each.
+16. Draw a deadlock cycle and break it using a global lock order.
+17. Explain the state transitions of a semaphore and both types of event.
+18. Draw every handle end in a parent-child anonymous-pipe exchange and explain EOF.
+19. Design a shared-memory header using offsets, lengths, version, and a synchronization rule.
+20. Correlate module, memory, thread, handle, token, and trace evidence for an unfamiliar process without jumping to a verdict.
+
+---
+
+<a id="section-appendix-course-coverage-tracker"></a>
+# [Appendix: course coverage tracker](#toc-section-appendix-course-coverage-tracker)
+
+You do not need to copy this appendix. Use it to mark topics after you can explain them from memory.
+
+## Foundations (8)
+
+- [ ] CPU architecture and data representation
+- [ ] Why does an operating system exist?
+- [ ] How Windows is organised
+- [ ] User mode and kernel mode
+- [ ] System calls and the Win32 API
+- [ ] How to read a Windows API contract
+- [ ] Calling Windows APIs safely from Python
+- [ ] Inspecting the operating system
+
+## Processes and handles (6)
+
+- [ ] Programs, processes, and isolation
+- [ ] Inside a process
+- [ ] Context switches and process metadata
+- [ ] How Windows creates a process
+- [ ] Kernel objects and the Object Manager
+- [ ] Handles, access rights, and reference counting
+
+## Threads and scheduling (5)
+
+- [ ] Processes and their threads
+- [ ] Thread contexts, stacks, and states
+- [ ] Creating and ending threads
+- [ ] How the scheduler chooses a thread
+- [ ] Priorities, boosts, and starvation
+
+## Memory management (7)
+
+- [ ] Addresses in binary and hexadecimal
+- [ ] The memory hierarchy and CPU caches
+- [ ] Virtual memory and address translation
+- [ ] Pages, frames, and page tables
+- [ ] Page faults, paging, and the page file
+- [ ] Shared memory and copy-on-write
+- [ ] VirtualAlloc, protection, and heaps
+
+## Linking and loading (6)
+
+- [ ] From source code to an executable
+- [ ] Static and dynamic linking
+- [ ] Anatomy of a Portable Executable
+- [ ] Sections and relative virtual addresses
+- [ ] Imports, exports, and the IAT
+- [ ] How the Windows loader loads a process
+
+## Windows management (6)
+
+- [ ] How the Registry is structured
+- [ ] Reading and changing Registry data
+- [ ] Windows services and the SCM
+- [ ] Controlling services from Python
+- [ ] Service hosts and background processes
+- [ ] WoW64 and redirection
+
+## Windows security (7)
+
+- [ ] The Windows security model
+- [ ] Users, groups, and SIDs
+- [ ] Access tokens and security contexts
+- [ ] Security descriptors, DACLs, and ACEs
+- [ ] How Windows performs an access check
+- [ ] Privileges and impersonation
+- [ ] UAC and integrity levels
+
+## Synchronization (6)
+
+- [ ] Why concurrent code goes wrong
+- [ ] Atomicity and race conditions
+- [ ] Critical sections and mutexes
+- [ ] Semaphores
+- [ ] Events and waitable objects
+- [ ] Deadlocks, starvation, and safe design
+
+## Inter-process communication (5)
+
+- [ ] Why processes need IPC
+- [ ] Anonymous pipes
+- [ ] Named-pipe servers and clients
+- [ ] File mappings and shared memory
+- [ ] Choosing an IPC mechanism
+
+## Hooking and injection (6)
+
+- [ ] Injection and hooking explained
+- [ ] Loading code during process startup
+- [ ] Remote memory and remote threads
+- [ ] Position-independent injected code
+- [ ] Windows hooks and IAT hooking
+- [ ] Detecting injection and suspicious modules
