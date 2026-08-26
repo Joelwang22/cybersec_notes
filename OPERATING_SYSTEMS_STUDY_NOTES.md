@@ -18,15 +18,6 @@
 - <a id="toc-section-13-final-self-test"></a>[13. Final self-test](#section-13-final-self-test)
 - <a id="toc-section-appendix-course-coverage-tracker"></a>[Appendix: course coverage tracker](#section-appendix-course-coverage-tracker)
 
----
-
-## How to use these notes
-
-1. Copy one numbered section at a time.
-2. After copying it, close the notes and redraw any sequence or relationship from memory.
-3. Explain each bold term without using the term itself. If you cannot, review that paragraph.
-4. Do the short recall questions at the end of each module without looking back.
-5. Learn relationships, not isolated API names. The APIs are examples of how Windows exposes each idea.
 
 ---
 
@@ -178,15 +169,6 @@ A Win32 call is not automatically a system call. Some Win32 functions work entir
 Prefer documented Win32 contracts for applications. Native system-call details are implementation details and may change.
 
 ## 1.8 Reading a Windows API contract
-
-For every API, record:
-
-1. **Purpose:** what operation does it request?
-2. **Inputs:** types, flags, valid ranges, optional values, and string encoding.
-3. **Outputs:** returned value and output buffers/parameters.
-4. **Failure rule:** `FALSE`, `NULL`, `INVALID_HANDLE_VALUE`, another sentinel, or an exception from a binding.
-5. **Error retrieval:** whether `GetLastError` is meaningful and when it must be read.
-6. **Ownership:** what resource was acquired and how it must be released.
 
 Common parameter annotations:
 
