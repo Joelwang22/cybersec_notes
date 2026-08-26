@@ -1,7 +1,5 @@
 # Operating Systems Study Notes
 
-These notes cover the full course in a learning order. They are designed to be copied by hand: each section starts with the central idea, explains the mechanism, and then separates concepts that are easy to confuse.
-
 <a id="contents"></a>
 # Contents
 
