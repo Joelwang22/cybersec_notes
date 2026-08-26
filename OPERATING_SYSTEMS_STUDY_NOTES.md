@@ -1,16 +1,5 @@
 # Operating Systems Study Notes
 
-These notes cover the full course in a learning order. They are designed to be copied by hand: each section starts with the central idea, explains the mechanism, and then separates concepts that are easy to confuse.
-
-## How to use these notes
-
-1. Copy one numbered section at a time.
-2. After copying it, close the notes and redraw any sequence or relationship from memory.
-3. Explain each bold term without using the term itself. If you cannot, review that paragraph.
-4. Do the short recall questions at the end of each module without looking back.
-5. Learn relationships, not isolated API names. The APIs are examples of how Windows exposes each idea.
-
----
 
 # 1. Foundations: the machine and the operating system
 
