@@ -231,13 +231,6 @@ A snapshot tells what exists now. A trace tells what happened over time. PID, TI
 
 `Access denied` is useful evidence: it reveals an access check or protection boundary, not merely a tool failure.
 
-### Foundation recall
-
-1. Why is administrator status different from kernel mode?
-2. Why is a Win32 call not necessarily a system call?
-3. What are the OS's abstraction and resource-management roles?
-4. What does a half-open address range mean?
-5. Why must cleanup be considered part of an API contract?
 
 ---
 
@@ -392,14 +385,6 @@ Writing bytes through a file handle does not necessarily mean the physical devic
 
 File lifetime and data durability are related but different questions.
 
-### Processes and handles recall
-
-1. Why is an executable file not a process?
-2. What does a process contain, and what does each thread contain?
-3. Why can a parent exit without automatically terminating its child?
-4. What information is stored conceptually in a handle-table entry?
-5. Why might requesting `PROCESS_ALL_ACCESS` fail when query-only access succeeds?
-6. Why can an object still exist after one process closes its handle?
 
 ---
 
@@ -515,14 +500,6 @@ Elapsed time and CPU time are different:
 
 Benchmarks should use repeated runs, stable inputs, and the correct metric. One fast run may reflect cache warmth or scheduling luck.
 
-### Threads and scheduling recall
-
-1. Why does Windows schedule threads rather than processes?
-2. What must be saved in a context switch?
-3. How does ready differ from waiting?
-4. Why does `join()` not cancel a thread?
-5. Why can too many threads make a program slower?
-6. Why does raising priority not solve every performance problem?
 
 ---
 
@@ -713,15 +690,6 @@ Do not use `AllocationBase` as every row's range start. The row range is `BaseAd
 
 VMMap classifies one process's virtual regions. RAMMap explains system-wide physical pages. Neither magically exposes all source-level ownership; interpretation still matters.
 
-### Memory recall
-
-1. Why can the same virtual address contain different data in two processes?
-2. What is the difference between a page, a frame, a page table, and a TLB?
-3. Explain reserved, committed, and resident without using them as synonyms.
-4. Why is a page fault not necessarily a disk operation or an error?
-5. How does copy-on-write preserve isolation?
-6. Why do heaps exist above `VirtualAlloc`?
-7. How do `BaseAddress` and `AllocationBase` differ?
 
 ---
 
@@ -945,15 +913,6 @@ Safer practices:
 
 Use static PE inspection to learn declared imports, Process Monitor for load-time events, and Process Explorer/ListDLLs for the current loaded-module snapshot. Each answers a different question.
 
-### Linking and loading recall
-
-1. Which problem does compilation solve, and which does linking solve?
-2. How do static and dynamic linking differ?
-3. Why is PE a mapping recipe rather than a memory dump?
-4. Explain file offset, RVA, and VA.
-5. What does the IAT contain after loading?
-6. Why can the actual image base differ from `ImageBase`?
-7. Why should `DllMain` do very little?
 
 ---
 
@@ -1104,15 +1063,6 @@ Do not assume every key is redirected or manually insert `WOW6432Node`. State wh
 
 Architecture evidence should agree across file headers, process bitness, pointer width, and loaded-module architecture.
 
-### Windows management recall
-
-1. What is the difference between a Registry key and value?
-2. Why are Registry value type and data inseparable?
-3. How does a service differ from a generic background process?
-4. Why is a successful start request not proof that a service is running?
-5. How can several services share one PID?
-6. Why does 64-bit `System32` contain native binaries while `SysWOW64` contains 32-bit ones?
-7. How do WoW64 Registry views differ from UAC virtualization?
 
 ---
 
@@ -1293,16 +1243,6 @@ When storage or memory is reassigned, Windows prevents a new user from reading l
 
 It does not mean deleted data is impossible to recover from storage media. Sanitization and forensic recovery are different topics.
 
-### Security recall
-
-1. Distinguish authentication, authorization, and auditing.
-2. Why does Windows store SIDs rather than only account names in permissions?
-3. What information does an access token carry?
-4. What is the difference between a null and an empty DACL?
-5. Why does an existing handle usually keep working after a DACL is tightened?
-6. How does a privilege differ from an object access right?
-7. What changes during thread impersonation?
-8. How do administrator membership, elevation, integrity, and kernel mode differ?
 
 ---
 
@@ -1493,15 +1433,6 @@ Participants remain active and react to one another but keep preventing progress
 
 Stack traces show where threads are stopped. Wait-chain analysis shows dependency relationships. Together they help explain hangs.
 
-### Synchronization recall
-
-1. Why is one source-code line not necessarily atomic?
-2. What is an invariant, and why should a lock protect it rather than a line?
-3. Compare critical section, mutex, semaphore, and event.
-4. What does `WAIT_ABANDONED` tell the new mutex owner?
-5. Why are “release ownership” and “close handle” separate?
-6. State the four necessary deadlock conditions.
-7. How do deadlock, starvation, and livelock differ?
 
 ---
 
@@ -1649,15 +1580,6 @@ Also evaluate:
 - security boundary;
 - observability and failure recovery.
 
-### IPC recall
-
-1. What four layers must an IPC design address?
-2. Why can an anonymous-pipe reader wait forever after the writer process seems finished?
-3. How do byte-mode and message-mode pipes differ?
-4. Why does a pipe ACL not remove the need to validate messages?
-5. Why must shared mappings use offsets rather than pointers?
-6. Distinguish visibility, ordering, and persistence.
-7. Why are synchronization objects IPC even when they do not carry application data?
 
 ---
 
@@ -1804,15 +1726,6 @@ Useful tools:
 
 Preserve evidence before taking disruptive action. Terminating a process may destroy the timeline, memory, handles, and connection state needed to understand what happened.
 
-### Hooking and injection recall
-
-1. How do injection and hooking differ?
-2. Why does architecture matter when code enters another process?
-3. Why is an address meaningful only in one process context?
-4. Why can arbitrary copied function bytes fail away from their original image?
-5. What does an IAT hook affect, and what can bypass it?
-6. Why is private executable memory evidence rather than proof?
-7. Why should evidence be preserved before responding?
 
 ---
 
