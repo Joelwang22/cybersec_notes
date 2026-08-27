@@ -14,9 +14,6 @@
 - <a id="toc-section-9-inter-process-communication-ipc"></a>[9. Inter-process communication (IPC)](#section-9-inter-process-communication-ipc)
 - <a id="toc-section-10-hooking-injection-and-detection"></a>[10. Hooking, injection, and detection](#section-10-hooking-injection-and-detection)
 - <a id="toc-section-11-high-value-distinctions"></a>[11. High-value distinctions](#section-11-high-value-distinctions)
-- <a id="toc-section-12-whole-course-mental-model"></a>[12. Whole-course mental model](#section-12-whole-course-mental-model)
-- <a id="toc-section-13-final-self-test"></a>[13. Final self-test](#section-13-final-self-test)
-- <a id="toc-section-appendix-course-coverage-tracker"></a>[Appendix: course coverage tracker](#section-appendix-course-coverage-tracker)
 
 
 ---
