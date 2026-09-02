@@ -1,6 +1,6 @@
 # Cloud Module Command Reference
 
-Use this file beside the audio tracks. Commands assume PowerShell, AWS CLI version 2, and a configured default Region.
+Commands assume PowerShell, AWS CLI version 2, and a configured default Region.
 
 ## Conventions and safety
 
