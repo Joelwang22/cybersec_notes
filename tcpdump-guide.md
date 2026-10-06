@@ -20,7 +20,7 @@ tcpdump -r capture.pcap [options] 'filter'
 - [Setup and help](#setup-and-help)
 - [Interfaces and subnets](#interfaces-and-subnets)
 - [Basic capture](#basic-capture)
-- [Output options](#output-options)
+- [Flags and their purpose](#output-options)
 - [Saving and reading captures](#saving-and-reading-captures)
 - [Filter syntax](#filter-syntax)
 - [Hosts and networks](#hosts-and-networks)
@@ -40,16 +40,16 @@ tcpdump -r capture.pcap [options] 'filter'
 
 ## [Setup and help](#contents "Back to contents")
 
-| Goal | Command |
-|---|---|
+| Goal                       | Command                      |
+| -------------------------- | ---------------------------- |
 | Install on Ubuntu / Debian | `sudo apt install tcpdump` |
-| Install on Fedora | `sudo dnf install tcpdump` |
-| Install on Arch Linux | `sudo pacman -S tcpdump` |
-| Find the executable | `command -v tcpdump` |
-| Show version | `tcpdump --version` |
-| Show help | `tcpdump -h` |
-| Read the command manual | `man tcpdump` |
-| Read the filter manual | `man pcap-filter` |
+| Install on Fedora          | `sudo dnf install tcpdump` |
+| Install on Arch Linux      | `sudo pacman -S tcpdump`   |
+| Find the executable        | `command -v tcpdump`       |
+| Show version               | `tcpdump --version`        |
+| Show help                  | `tcpdump -h`               |
+| Read the command manual    | `man tcpdump`              |
+| Read the filter manual     | `man pcap-filter`          |
 
 Windows does not include tcpdump by default. A Linux VM provides the commands
 used here. WSL sees its own network environment, which may differ from Windows.
@@ -60,16 +60,16 @@ command. macOS uses different interface names, commonly `en0`.
 
 ## [Interfaces and subnets](#contents "Back to contents")
 
-| Goal | Command |
-|---|---|
-| List capture interfaces | `sudo tcpdump -D` |
-| Show Linux interface addresses | `ip -br addr` |
-| Show routes and default interface | `ip route` |
-| Select an interface by name | `sudo tcpdump -i eth0` |
-| Select an interface by listed number | `sudo tcpdump -i 1` |
-| Capture across interfaces on Linux | `sudo tcpdump -i any` |
-| Capture local loopback traffic on Linux | `sudo tcpdump -i lo` |
-| List link-layer types for an interface | `sudo tcpdump -i eth0 -L` |
+| Goal                                    | Command                     |
+| --------------------------------------- | --------------------------- |
+| List capture interfaces                 | `sudo tcpdump -D`         |
+| Show Linux interface addresses          | `ip -br addr`             |
+| Show routes and default interface       | `ip route`                |
+| Select an interface by name             | `sudo tcpdump -i eth0`    |
+| Select an interface by listed number    | `sudo tcpdump -i 1`       |
+| Capture across interfaces on Linux      | `sudo tcpdump -i any`     |
+| Capture local loopback traffic on Linux | `sudo tcpdump -i lo`      |
+| List link-layer types for an interface  | `sudo tcpdump -i eth0 -L` |
 
 `any` is platform-dependent. On Linux it uses a cooked link-layer format rather
 than ordinary Ethernet headers and does not enable promiscuous mode.
@@ -96,16 +96,16 @@ sudo tcpdump -i eth0 -nn
 
 ## [Basic capture](#contents "Back to contents")
 
-| Goal | Command |
-|---|---|
-| Capture without a filter | `sudo tcpdump -i eth0 -nn` |
-| Stop after 20 matching packets | `sudo tcpdump -i eth0 -nn -c 20` |
-| Capture traffic involving one host | `sudo tcpdump -i eth0 -nn 'host 192.168.30.223'` |
-| Capture traffic to/from a subnet | `sudo tcpdump -i eth0 -nn 'net 192.168.30.0/24'` |
-| Use default snapshot length explicitly | `sudo tcpdump -i eth0 -nn -s 0` |
-| Capture only incoming packets, if supported | `sudo tcpdump -i eth0 -nn -Q in` |
-| Capture only outgoing packets, if supported | `sudo tcpdump -i eth0 -nn -Q out` |
-| Disable requesting promiscuous mode | `sudo tcpdump -i eth0 -nn -p` |
+| Goal                                        | Command                                            |
+| ------------------------------------------- | -------------------------------------------------- |
+| Capture without a filter                    | `sudo tcpdump -i eth0 -nn`                       |
+| Stop after 20 matching packets              | `sudo tcpdump -i eth0 -nn -c 20`                 |
+| Capture traffic involving one host          | `sudo tcpdump -i eth0 -nn 'host 192.168.30.223'` |
+| Capture traffic to/from a subnet            | `sudo tcpdump -i eth0 -nn 'net 192.168.30.0/24'` |
+| Use default snapshot length explicitly      | `sudo tcpdump -i eth0 -nn -s 0`                  |
+| Capture only incoming packets, if supported | `sudo tcpdump -i eth0 -nn -Q in`                 |
+| Capture only outgoing packets, if supported | `sudo tcpdump -i eth0 -nn -Q out`                |
+| Disable requesting promiscuous mode         | `sudo tcpdump -i eth0 -nn -p`                    |
 
 `-s` controls how many bytes of each packet are retained. `-s 0` uses the default
 large snapshot length, currently 262144 bytes. Small values can truncate evidence.
@@ -113,32 +113,63 @@ large snapshot length, currently 262144 bytes. Small values can truncate evidenc
 
 <a id="output-options"></a>
 
-## [Output options](#contents "Back to contents")
+## [Flags and their purpose](#contents "Back to contents")
 
-| Option | Meaning |
-|---|---|
-| `-n` | Disable address name resolution |
-| `-nn` | Also keep port numbers numeric |
-| `-v`, `-vv`, `-vvv` | Increase decoded detail |
-| `-q` | Shorter summaries |
-| `-e` | Show link-layer information, such as Ethernet MACs |
-| `-S` | Show absolute TCP sequence numbers |
-| `-A` | Show packet bytes as ASCII, excluding link-layer header |
-| `-X` | Show hex and ASCII, excluding link-layer header |
-| `-XX` | Show hex and ASCII including link-layer header |
-| `-x`, `-xx` | Hex only, without / with link-layer header |
-| `-t` | Omit timestamps |
-| `-tt` | Show Unix epoch timestamps |
-| `-ttt` | Show time since the previous displayed packet |
-| `-tttt` | Show date and time |
-| `-ttttt` | Show time since the first displayed packet |
-| `-l` | Line-buffer text output, useful with pipes |
+### Interfaces and capture controls
+
+| Flag                                | Purpose                                                                                   |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| `-i interface`                    | Select the capture interface, such as`-i eth0`                                          |
+| `-D`                              | List available capture interfaces                                                         |
+| `-c count`                        | Stop after this many matching packets, such as`-c 10`                                   |
+| `-s bytes`                        | Set the maximum bytes retained per packet;`-s 0` uses the default large snapshot length |
+| `-p`                              | Do not request promiscuous mode                                                           |
+| `-Q in`, `-Q out`, `-Q inout` | Select capture direction, where supported                                                 |
+| `-L`                              | List supported link-layer types for the selected interface                                |
+| `-y type`                         | Select a supported link-layer type                                                        |
+
+### Filters and help
+
+| Flag          | Purpose                                                       |
+| ------------- | ------------------------------------------------------------- |
+| `-F file`   | Read the filter expression from a text file                   |
+| `-d`        | Print compiled filter instructions and exit without capturing |
+| `-dd`       | Print compiled filter instructions as a C array               |
+| `-ddd`      | Print compiled filter instructions as decimal numbers         |
+| `-h`        | Show command help                                             |
+| `--version` | Show tcpdump and library versions                             |
+
+### Packet display
+
+| Flag                      | Purpose                                                 |
+| ------------------------- | ------------------------------------------------------- |
+| `-l` | Line-buffer text output so piped commands such as grep receive each line promptly |
+| `-n`                    | Disable address name resolution                         |
+| `-nn`                   | Also keep port numbers numeric                          |
+| `-v`, `-vv`, `-vvv` | Increase decoded detail                                 |
+| `-q`                    | Shorter summaries                                       |
+| `-e`                    | Show link-layer information, such as Ethernet MACs      |
+| `-S`                    | Show absolute TCP sequence numbers                      |
+| `-A`                    | Show packet bytes as ASCII, excluding link-layer header |
+| `-X`                    | Show hex and ASCII, excluding link-layer header         |
+| `-XX`                   | Show hex and ASCII including link-layer header          |
+| `-x`, `-xx`           | Hex only, without / with link-layer header              |
+
+### Timestamps
+
+| Flag       | Purpose                                       |
+| ---------- | --------------------------------------------- |
+| `-t`     | Omit timestamps                               |
+| `-tt`    | Show Unix epoch timestamps                    |
+| `-ttt`   | Show time since the previous displayed packet |
+| `-tttt`  | Show date and time                            |
+| `-ttttt` | Show time since the first displayed packet    |
 
 <details>
 <summary>Show output examples</summary>
 
 ```bash
-sudo tcpdump -i eth0 -nn -tttt -vv 'icmp'
+sudo tcpdump -i eth0 -nn -tttt -vv 'picmp'
 tcpdump -nn -e -r capture.pcap 'arp'
 tcpdump -nn -X -r capture.pcap 'tcp port 80'
 
@@ -152,17 +183,13 @@ sudo tcpdump -i eth0 -nn -l 'port 53' | tee dns-summary.txt
 
 ## [Saving and reading captures](#contents "Back to contents")
 
-| Goal | Command |
-|---|---|
-| Save packets to a file | `sudo tcpdump -i eth0 -nn -s 0 -w capture.pcap` |
-| Save only matching packets | `sudo tcpdump -i eth0 -w dns.pcap 'port 53'` |
-| Save 100 matching packets | `sudo tcpdump -i eth0 -c 100 -w sample.pcap 'tcp'` |
-| Read a saved capture | `tcpdump -nn -r capture.pcap` |
-| Read with date, time and detail | `tcpdump -nn -tttt -vv -r capture.pcap` |
-| Filter a saved capture | `tcpdump -nn -r capture.pcap 'host 10.0.0.2'` |
-| Write a filtered copy | `tcpdump -r capture.pcap -w dns-only.pcap 'port 53'` |
-| Save text summaries | `tcpdump -nn -r capture.pcap > summary.txt` |
-| Count matching packets on newer versions | `tcpdump --count -r capture.pcap 'tcp'` |
+| Flag                             | Purpose                                                               |
+| -------------------------------- | --------------------------------------------------------------------- |
+| `-w file`                      | Save packets as binary capture data, such as`-w capture.pcap`       |
+| `-r file`                      | Read packets from a saved capture, such as`-r capture.pcap`         |
+| `-r input.pcap -w output.pcap` | Read one capture and write a filtered copy when followed by a filter  |
+| `--count`                      | Count matching packets in a saved capture, on supported versions      |
+| `--print`                      | Print packet summaries while saving with`-w`, on supported versions |
 
 `-w` writes binary packet data, not readable text. Normally it suppresses packet
 summaries. Newer versions offer `--print` to print while saving.
@@ -196,18 +223,18 @@ tcpdump -nn -vv -r host-only.pcap 'port 53'
 Tcpdump uses libpcap capture filters, often called BPF filters. They are different
 from Wireshark display filters. Put the entire filter in single quotes.
 
-| Syntax | Meaning | Example |
-|---|---|---|
-| `host` | One source or destination address | `host 10.0.0.2` |
-| `net` | Source or destination network | `net 10.0.0.0/24` |
-| `src` | Source only | `src host 10.0.0.2` |
-| `dst` | Destination only | `dst port 443` |
-| `src or dst` | Either direction, the default | `src or dst net 10.0.0.0/24` |
-| `src and dst` | Both directions must match | `src and dst net 10.0.0.0/24` |
-| `and` | Both conditions | `tcp and port 443` |
-| `or` | Either condition | `port 80 or port 443` |
-| `not` | Exclude a condition | `not arp` |
-| `( ... )` | Group conditions | `tcp and (port 80 or port 443)` |
+| Syntax          | Meaning                           | Example                           |
+| --------------- | --------------------------------- | --------------------------------- |
+| `host`        | One source or destination address | `host 10.0.0.2`                 |
+| `net`         | Source or destination network     | `net 10.0.0.0/24`               |
+| `src`         | Source only                       | `src host 10.0.0.2`             |
+| `dst`         | Destination only                  | `dst port 443`                  |
+| `src or dst`  | Either direction, the default     | `src or dst net 10.0.0.0/24`    |
+| `src and dst` | Both directions must match        | `src and dst net 10.0.0.0/24`   |
+| `and`         | Both conditions                   | `tcp and port 443`              |
+| `or`          | Either condition                  | `port 80 or port 443`           |
+| `not`         | Exclude a condition               | `not arp`                       |
+| `( ... )`     | Group conditions                  | `tcp and (port 80 or port 443)` |
 
 `and` and `or` have equal precedence in this syntax and associate left to right.
 Use parentheses whenever you mix them. `not` takes precedence.
@@ -236,26 +263,26 @@ tcpdump -r capture.pcap -d 'host 10.0.0.2'
 
 Use these expressions after the options in a command.
 
-| Goal | Filter |
-|---|---|
-| To/from one IPv4 host | `host 10.0.0.2` |
-| Sent by a host | `src host 10.0.0.2` |
-| Sent to a host | `dst host 10.0.0.2` |
-| Between two hosts, either direction | `host 10.0.0.2 and host 10.0.0.3` |
-| One direction between hosts | `src host 10.0.0.2 and dst host 10.0.0.3` |
-| To/from a subnet | `net 10.0.0.0/24` |
-| From a subnet | `src net 10.0.0.0/24` |
-| To a subnet | `dst net 10.0.0.0/24` |
-| Both endpoints in a subnet | `src net 10.0.0.0/24 and dst net 10.0.0.0/24` |
-| Local subnet to outside it | `src net 10.0.0.0/24 and not dst net 10.0.0.0/24` |
-| Outside to local subnet | `dst net 10.0.0.0/24 and not src net 10.0.0.0/24` |
-| Exclude one host | `not host 10.0.0.2` |
-| IPv4 traffic only | `ip` |
-| IPv6 traffic only | `ip6` |
-| To/from an IPv6 host | `ip6 host 2001:db8::2` |
-| To/from an IPv6 subnet | `ip6 net 2001:db8::/64` |
-| IPv4 multicast | `ip multicast` |
-| IPv6 multicast | `ip6 multicast` |
+| Goal                                | Filter                                              |
+| ----------------------------------- | --------------------------------------------------- |
+| To/from one IPv4 host               | `host 10.0.0.2`                                   |
+| Sent by a host                      | `src host 10.0.0.2`                               |
+| Sent to a host                      | `dst host 10.0.0.2`                               |
+| Between two hosts, either direction | `host 10.0.0.2 and host 10.0.0.3`                 |
+| One direction between hosts         | `src host 10.0.0.2 and dst host 10.0.0.3`         |
+| To/from a subnet                    | `net 10.0.0.0/24`                                 |
+| From a subnet                       | `src net 10.0.0.0/24`                             |
+| To a subnet                         | `dst net 10.0.0.0/24`                             |
+| Both endpoints in a subnet          | `src net 10.0.0.0/24 and dst net 10.0.0.0/24`     |
+| Local subnet to outside it          | `src net 10.0.0.0/24 and not dst net 10.0.0.0/24` |
+| Outside to local subnet             | `dst net 10.0.0.0/24 and not src net 10.0.0.0/24` |
+| Exclude one host                    | `not host 10.0.0.2`                               |
+| IPv4 traffic only                   | `ip`                                              |
+| IPv6 traffic only                   | `ip6`                                             |
+| To/from an IPv6 host                | `ip6 host 2001:db8::2`                            |
+| To/from an IPv6 subnet              | `ip6 net 2001:db8::/64`                           |
+| IPv4 multicast                      | `ip multicast`                                    |
+| IPv6 multicast                      | `ip6 multicast`                                   |
 
 Use literal IPs for repeatable filters. `host example.com` resolves the name when
 the filter is compiled; it does not match HTTP hostnames or follow later IP changes.
@@ -264,28 +291,28 @@ the filter is compiled; it does not match HTTP hostnames or follow later IP chan
 
 ## [Ports and protocols](#contents "Back to contents")
 
-| Goal | Filter |
-|---|---|
-| TCP | `tcp` |
-| UDP | `udp` |
-| IPv4 ICMP, such as ping | `icmp` |
-| IPv6 ICMP, including neighbour discovery | `icmp6` |
-| Address Resolution Protocol | `arp` |
-| TCP source or destination port 443 | `tcp port 443` |
-| UDP destination port 53 | `udp dst port 53` |
-| TCP source port 80 | `tcp src port 80` |
-| DNS over ordinary TCP/UDP port 53 | `udp port 53 or tcp port 53` |
-| HTTP's usual TCP port | `tcp port 80` |
-| HTTPS TCP and common QUIC port | `tcp port 443 or udp port 443` |
-| SSH's usual port | `tcp port 22` |
-| DHCPv4's usual ports | `udp and (port 67 or port 68)` |
-| DHCPv6's usual ports | `udp and (port 546 or port 547)` |
-| NTP's usual port | `udp port 123` |
-| mDNS's usual port | `udp port 5353` |
-| LLMNR's usual port | `udp port 5355 or tcp port 5355` |
-| SMB's usual direct TCP port | `tcp port 445` |
-| TCP port range | `tcp portrange 8000-8100` |
-| Exclude SSH TCP traffic | `not tcp port 22` |
+| Goal                                     | Filter                             |
+| ---------------------------------------- | ---------------------------------- |
+| TCP                                      | `tcp`                            |
+| UDP                                      | `udp`                            |
+| IPv4 ICMP, such as ping                  | `icmp`                           |
+| IPv6 ICMP, including neighbour discovery | `icmp6`                          |
+| Address Resolution Protocol              | `arp`                            |
+| TCP source or destination port 443       | `tcp port 443`                   |
+| UDP destination port 53                  | `udp dst port 53`                |
+| TCP source port 80                       | `tcp src port 80`                |
+| DNS over ordinary TCP/UDP port 53        | `udp port 53 or tcp port 53`     |
+| HTTP's usual TCP port                    | `tcp port 80`                    |
+| HTTPS TCP and common QUIC port           | `tcp port 443 or udp port 443`   |
+| SSH's usual port                         | `tcp port 22`                    |
+| DHCPv4's usual ports                     | `udp and (port 67 or port 68)`   |
+| DHCPv6's usual ports                     | `udp and (port 546 or port 547)` |
+| NTP's usual port                         | `udp port 123`                   |
+| mDNS's usual port                        | `udp port 5353`                  |
+| LLMNR's usual port                       | `udp port 5355 or tcp port 5355` |
+| SMB's usual direct TCP port              | `tcp port 445`                   |
+| TCP port range                           | `tcp portrange 8000-8100`        |
+| Exclude SSH TCP traffic                  | `not tcp port 22`                |
 
 A port number suggests a service; it does not prove which application is running.
 Port 53 misses encrypted DNS over HTTPS or TLS. TCP port 443 misses QUIC over UDP.
@@ -295,16 +322,16 @@ Port filters can miss non-initial IP fragments because those lack port headers.
 
 ## [MAC addresses and VLANs](#contents "Back to contents")
 
-| Goal | Filter |
-|---|---|
-| Ethernet source or destination MAC | `ether host 00:0c:29:b9:45:b2` |
-| Ethernet source MAC | `ether src 00:0c:29:b9:45:b2` |
-| Ethernet destination MAC | `ether dst 00:0c:29:b9:45:b2` |
-| Ethernet broadcast | `ether broadcast` |
-| Ethernet multicast, including broadcast | `ether multicast` |
-| VLAN-tagged traffic | `vlan` |
-| VLAN ID 100 | `vlan 100` |
-| TCP port 443 inside VLAN 100 | `vlan 100 and tcp port 443` |
+| Goal                                    | Filter                           |
+| --------------------------------------- | -------------------------------- |
+| Ethernet source or destination MAC      | `ether host 00:0c:29:b9:45:b2` |
+| Ethernet source MAC                     | `ether src 00:0c:29:b9:45:b2`  |
+| Ethernet destination MAC                | `ether dst 00:0c:29:b9:45:b2`  |
+| Ethernet broadcast                      | `ether broadcast`              |
+| Ethernet multicast, including broadcast | `ether multicast`              |
+| VLAN-tagged traffic                     | `vlan`                         |
+| VLAN ID 100                             | `vlan 100`                     |
+| TCP port 443 inside VLAN 100            | `vlan 100 and tcp port 443`    |
 
 Use `-e` to display Ethernet headers. MAC filters depend on the capture link type.
 For routed WAN traffic, the local Ethernet frame usually identifies the gateway,
@@ -320,15 +347,15 @@ before the capture sees them.
 
 Use these to inspect connection setup, closure and resets in your own captures.
 
-| Goal | Filter |
-|---|---|
-| Any SYN, including SYN-ACK | `tcp[tcpflags] & tcp-syn != 0` |
-| SYN without ACK, usual connection start | `(tcp[tcpflags] & (tcp-syn\|tcp-ack)) == tcp-syn` |
-| Both SYN and ACK set | `(tcp[tcpflags] & (tcp-syn\|tcp-ack)) == (tcp-syn\|tcp-ack)` |
-| Any reset | `tcp[tcpflags] & tcp-rst != 0` |
-| Any FIN | `tcp[tcpflags] & tcp-fin != 0` |
-| Any PSH | `tcp[tcpflags] & tcp-push != 0` |
-| Any ACK | `tcp[tcpflags] & tcp-ack != 0` |
+| Goal                                    | Filter                                                       |
+| --------------------------------------- | ------------------------------------------------------------ |
+| Any SYN, including SYN-ACK              | `tcp[tcpflags] & tcp-syn != 0`                             |
+| SYN without ACK, usual connection start | `(tcp[tcpflags] & (tcp-syn\|tcp-ack)) == tcp-syn`           |
+| Both SYN and ACK set                    | `(tcp[tcpflags] & (tcp-syn\|tcp-ack)) == (tcp-syn\|tcp-ack)` |
+| Any reset                               | `tcp[tcpflags] & tcp-rst != 0`                             |
+| Any FIN                                 | `tcp[tcpflags] & tcp-fin != 0`                             |
+| Any PSH                                 | `tcp[tcpflags] & tcp-push != 0`                            |
+| Any ACK                                 | `tcp[tcpflags] & tcp-ack != 0`                             |
 
 The `\|` escapes in the Markdown table render as ordinary `|` characters.
 Type `|`, not `\|`, inside the quoted filter. `&` is a bitwise mask here.
@@ -344,7 +371,8 @@ when you need reliable decoded IPv6 flag inspection.
 
 ```bash
 # Initial connection attempts in a saved capture
-tcpdump -nn -r capture.pcap '(tcp[tcpflags] & (tcp-syn|tcp-ack)) == tcp-syn'
+tcpdump 
+-nn -r capture.pcap '(tcp[tcpflags] & (tcp-syn|tcp-ack)) == tcp-syn'
 
 # Resets involving one host
 tcpdump -nn -r capture.pcap 'host 10.0.0.2 and (tcp[tcpflags] & tcp-rst != 0)'
@@ -359,17 +387,17 @@ tcpdump -nn -r capture.pcap 'tcp[tcpflags] & (tcp-fin|tcp-rst) != 0'
 
 ## [Packet lengths and header fields](#contents "Back to contents")
 
-| Goal | Filter |
-|---|---|
-| Packet length greater than 1000 bytes | `len > 1000` |
-| Packet length at most 128 bytes | `len <= 128` |
-| IPv4 TTL at most 1 | `ip[8] <= 1` |
-| IPv4 ICMP echo request | `icmp[icmptype] == icmp-echo` |
-| IPv4 ICMP echo reply | `icmp[icmptype] == icmp-echoreply` |
-| IPv4 ICMP destination unreachable | `icmp[icmptype] == icmp-unreach` |
-| IPv4 ICMP time exceeded | `icmp[icmptype] == icmp-timxceed` |
-| IPv4 fragments, including the first fragment | `(ip[6:2] & 0x3fff) != 0` |
-| Non-initial IPv4 fragments only | `(ip[6:2] & 0x1fff) != 0` |
+| Goal                                         | Filter                               |
+| -------------------------------------------- | ------------------------------------ |
+| Packet length greater than 1000 bytes        | `len > 1000`                       |
+| Packet length at most 128 bytes              | `len <= 128`                       |
+| IPv4 TTL at most 1                           | `ip[8] <= 1`                       |
+| IPv4 ICMP echo request                       | `icmp[icmptype] == icmp-echo`      |
+| IPv4 ICMP echo reply                         | `icmp[icmptype] == icmp-echoreply` |
+| IPv4 ICMP destination unreachable            | `icmp[icmptype] == icmp-unreach`   |
+| IPv4 ICMP time exceeded                      | `icmp[icmptype] == icmp-timxceed`  |
+| IPv4 fragments, including the first fragment | `(ip[6:2] & 0x3fff) != 0`          |
+| Non-initial IPv4 fragments only              | `(ip[6:2] & 0x1fff) != 0`          |
 
 `protocol[offset:size]` reads bytes from a header. Offsets start at zero; size
 defaults to one byte. These expressions require knowledge of the packet format.
@@ -385,30 +413,30 @@ application-content matching.
 12:34:56.123456 IP 10.0.0.2.49224 > 104.25.198.31.443: Flags [S], seq 1000, win 64240, length 0
 ```
 
-| Part | Meaning |
-|---|---|
-| `12:34:56.123456` | Capture timestamp |
-| `IP` | IPv4; IPv6 commonly appears as `IP6` |
-| `10.0.0.2.49224` | Source IP and TCP port |
-| `>` | Direction from source to destination |
-| `104.25.198.31.443` | Destination IP and TCP port |
-| `Flags [S]` | SYN flag |
-| `seq` | TCP sequence number; often relative after the initial packet |
-| `ack` | Next byte expected from the peer |
-| `win` | Advertised receive window field; scaling may also apply |
-| `length 0` | No TCP payload in this packet, not a zero-byte frame |
+| Part                  | Meaning                                                      |
+| --------------------- | ------------------------------------------------------------ |
+| `12:34:56.123456`   | Capture timestamp                                            |
+| `IP`                | IPv4; IPv6 commonly appears as`IP6`                        |
+| `10.0.0.2.49224`    | Source IP and TCP port                                       |
+| `>`                 | Direction from source to destination                         |
+| `104.25.198.31.443` | Destination IP and TCP port                                  |
+| `Flags [S]`         | SYN flag                                                     |
+| `seq`               | TCP sequence number; often relative after the initial packet |
+| `ack`               | Next byte expected from the peer                             |
+| `win`               | Advertised receive window field; scaling may also apply      |
+| `length 0`          | No TCP payload in this packet, not a zero-byte frame         |
 
 | Flag in output | Meaning |
-|---|---|
-| `S` | SYN |
-| `.` | ACK |
-| `F` | FIN |
-| `R` | RST |
-| `P` | PSH |
-| `U` | URG |
-| `[S.]` | SYN-ACK |
-| `[P.]` | PSH-ACK |
-| `[F.]` | FIN-ACK |
+| -------------- | ------- |
+| `S`          | SYN     |
+| `.`          | ACK     |
+| `F`          | FIN     |
+| `R`          | RST     |
+| `P`          | PSH     |
+| `U`          | URG     |
+| `[S.]`       | SYN-ACK |
+| `[P.]`       | PSH-ACK |
+| `[F.]`       | FIN-ACK |
 
 For DNS summaries, `A? example.com.` asks for IPv4 addresses and
 `AAAA? example.com.` asks for IPv6 addresses. A DNS lookup alone does not prove
@@ -492,15 +520,16 @@ traffic using that TCP port, so omit it if SSH itself is part of the investigati
 
 ## [File rotation and buffering](#contents "Back to contents")
 
-| Option | Meaning |
-|---|---|
-| `-C 100` | Rotate near 100 million bytes per file; boundary is not exact |
-| `-W 5` with `-C` | Keep a five-file ring, overwriting older files |
-| `-G 60` | Rotate every 60 seconds |
-| `-W 10` with `-G` alone | Exit after creating ten files |
-| `-U` with `-w` | Flush saved output after each packet |
-| `-B 4096` | Request a 4096 KiB capture buffer |
-| `--immediate-mode` | Request packet delivery without normal buffering |
+| Flag                        | Purpose                                                       |
+| --------------------------- | ------------------------------------------------------------- |
+| `-C 100`                  | Rotate near 100 million bytes per file; boundary is not exact |
+| `-W 5` with `-C`        | Keep a five-file ring, overwriting older files                |
+| `-G 60`                   | Rotate every 60 seconds                                       |
+| `-W 10` with `-G` alone | Exit after creating ten files                                 |
+| `-U` with `-w`          | Flush saved output after each packet                          |
+| `-B 4096`                 | Request a 4096 KiB capture buffer                             |
+| `--immediate-mode`        | Request packet delivery without normal buffering              |
+| `-l`                      | Line-buffer terminal text output, useful with pipes           |
 
 <details>
 <summary>Show rotation examples</summary>
@@ -528,22 +557,22 @@ privilege drop. `-U` does not guarantee data survives a sudden power loss.
 
 ## [Troubleshooting](#contents "Back to contents")
 
-| Problem | What to check |
-|---|---|
-| `command not found` | Install tcpdump and check `command -v tcpdump` |
-| Permission denied opening interface | Use approved capture permissions or `sudo` |
-| No such device | List interfaces with `tcpdump -D`; check spelling |
-| No packets | Check the interface, generate your own test traffic, temporarily remove the filter |
-| Missing local process traffic | Try Linux loopback `-i lo` |
-| Filter syntax error | Quote the expression; use capture syntax, not `ip.addr == ...` |
-| `[|tcp]` or similar truncation marker | Check snapshot length and whether the original file was truncated |
-| Bad checksums on outgoing traffic | NIC checksum offloading can cause apparent errors in local captures |
-| Larger-than-expected packets | Segmentation/coalescing offloads can change what the host capture sees |
-| Kernel packet drops | Save with `-w`, reduce printed detail, narrow the filter, consider increasing `-B` |
-| Cannot write or rotate files | Check path permissions, disk space and privilege-drop behaviour |
-| A feature is unavailable | Check `tcpdump --version` and the installed manual |
-| Binary output looks garbled | Read the pcap with `tcpdump -r` or Wireshark |
-| Cannot read a pcapng file | Support depends on libpcap and file contents; use Wireshark to export a compatible pcap copy |
+| Problem                             | What to check                                                                                |
+| ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| `command not found`               | Install tcpdump and check`command -v tcpdump`                                              |
+| Permission denied opening interface | Use approved capture permissions or`sudo`                                                  |
+| No such device                      | List interfaces with`tcpdump -D`; check spelling                                           |
+| No packets                          | Check the interface, generate your own test traffic, temporarily remove the filter           |
+| Missing local process traffic       | Try Linux loopback`-i lo`                                                                  |
+| Filter syntax error                 | Quote the expression; use capture syntax, not`ip.addr == ...`                              |
+| `[                                  | tcp]` or similar truncation marker                                                           |
+| Bad checksums on outgoing traffic   | NIC checksum offloading can cause apparent errors in local captures                          |
+| Larger-than-expected packets        | Segmentation/coalescing offloads can change what the host capture sees                       |
+| Kernel packet drops                 | Save with`-w`, reduce printed detail, narrow the filter, consider increasing `-B`        |
+| Cannot write or rotate files        | Check path permissions, disk space and privilege-drop behaviour                              |
+| A feature is unavailable            | Check`tcpdump --version` and the installed manual                                          |
+| Binary output looks garbled         | Read the pcap with`tcpdump -r` or Wireshark                                                |
+| Cannot read a pcapng file           | Support depends on libpcap and file contents; use Wireshark to export a compatible pcap copy |
 
 At shutdown, tcpdump reports captured packets, packets received by the filter
 and packets dropped by the kernel. These counters depend on the OS; the first
@@ -553,16 +582,16 @@ two are not always equal. Zero reported drops does not prove complete visibility
 
 ## [Wireshark and Tshark](#contents "Back to contents")
 
-| Goal | Tcpdump / capture filter | Wireshark display filter |
-|---|---|---|
-| One IPv4 host | `host 10.0.0.2` | `ip.addr == 10.0.0.2` |
-| IPv4 source | `src host 10.0.0.2` | `ip.src == 10.0.0.2` |
-| IPv4 subnet | `ip net 10.0.0.0/24` | `ip.addr == 10.0.0.0/24` |
-| TCP port | `tcp port 443` | `tcp.port == 443` |
-| Ordinary DNS ports | `udp port 53 or tcp port 53` | `dns` for decoded DNS |
-| TCP reset | `tcp[tcpflags] & tcp-rst != 0` | `tcp.flags.reset == 1` |
-| HTTP response | No general decoded HTTP field filter | `http.response.code == 200` |
-| A decoded TCP stream | Match endpoint addresses and ports | `tcp.stream == 11` |
+| Goal                 | Tcpdump / capture filter             | Wireshark display filter      |
+| -------------------- | ------------------------------------ | ----------------------------- |
+| One IPv4 host        | `host 10.0.0.2`                    | `ip.addr == 10.0.0.2`       |
+| IPv4 source          | `src host 10.0.0.2`                | `ip.src == 10.0.0.2`        |
+| IPv4 subnet          | `ip net 10.0.0.0/24`               | `ip.addr == 10.0.0.0/24`    |
+| TCP port             | `tcp port 443`                     | `tcp.port == 443`           |
+| Ordinary DNS ports   | `udp port 53 or tcp port 53`       | `dns` for decoded DNS       |
+| TCP reset            | `tcp[tcpflags] & tcp-rst != 0`     | `tcp.flags.reset == 1`      |
+| HTTP response        | No general decoded HTTP field filter | `http.response.code == 200` |
+| A decoded TCP stream | Match endpoint addresses and ports   | `tcp.stream == 11`          |
 
 These are practical comparisons, not exact equivalences for every packet type.
 For example, unqualified `host` can also match ARP addresses, while `ip.addr`
